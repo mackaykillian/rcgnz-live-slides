@@ -1,0 +1,4 @@
+# Copy to .dev.vars and paste your Airtable personal access token.
+# Scopes: data.records:read, schema.bases:read — access: the RCGNZ base only.
+# Leave empty to run with mock data.
+AIRTABLE_TOKEN=

@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/*
+ * App UI tokens — from the "RCGNZ Live Slides" app design in Figma
+ * (Awardco Web Designs › New Design Updates).
+ */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #f1f4f7; /* app background */
+  --color-ink: #020e1e; /* text/neutral/bold */
+  --color-ink-muted: #3e4854; /* text/neutral/default */
+  --color-ink-subtle: #cccfd2; /* text/neutral/subtle, stroke/neutral/default */
+  --color-accent: #256cfa; /* surface/accent/default */
+  --color-accent-soft: rgb(37 108 250 / 0.15);
+  --color-overlay-subtle: rgb(2 14 30 / 0.05); /* surface/overlay/subtle */
+  --color-preview: #ebf2fa; /* gallery thumbnail background */
+
+  /* Slide fonts — never used by the app chrome. */
+  --font-crystal: "Crystal", ui-sans-serif, system-ui, sans-serif;
+  --font-emilio: "Emilio", ui-serif, Georgia, serif;
+  --font-space-mono: "Space Mono", ui-monospace, monospace;
+}
+
+/* Licensed slide fonts — see public/fonts/README.md */
+@font-face {
+  font-family: "Crystal";
+  src: url("/fonts/Crystal-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "Crystal";
+  src: url("/fonts/Crystal-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-display: block;
+}
+@font-face {
+  font-family: "Crystal";
+  src: url("/fonts/Crystal-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-display: block;
+}
+@font-face {
+  font-family: "Emilio";
+  src: url("/fonts/Emilio-RegularItalic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-canvas font-sans font-medium text-ink antialiased;
+}

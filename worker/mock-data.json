@@ -1,0 +1,941 @@
+{
+  "snapshot": {
+    "eventName": "RCGNZ Summit 2026",
+    "syncedAt": "",
+    "source": "mock",
+    "sessions": [
+      {
+        "id": "6a43fad27e825d638f0aa174",
+        "title": "Braindates",
+        "start": "2026-11-09T21:00:00.000Z",
+        "end": "2026-11-10T00:00:00.000Z",
+        "tags": [
+          "Social",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fad1157110d10bd1940b",
+        "title": "COE 1:1 Strategy Sessions",
+        "start": "2026-11-09T21:00:00.000Z",
+        "end": "2026-11-10T00:00:00.000Z",
+        "tags": [
+          "Ask the Experts"
+        ],
+        "room": null,
+        "shrmCode": "26-QX4TB",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f4b",
+          "69c1bd5b0ee18049f5645569",
+          "69c1bd5b0ee18049f5645565",
+          "6a3c30229870f1b88f3c0222",
+          "69c1bd542c5ef20511784f4d",
+          "69c1bd542c5ef20511784f49",
+          "69c1bd5b0ee18049f564556d"
+        ]
+      },
+      {
+        "id": "6a43fad493b79d41a4951365",
+        "title": "Demos with a Solution Engineer",
+        "start": "2026-11-09T21:00:00.000Z",
+        "end": "2026-11-10T00:00:00.000Z",
+        "tags": [
+          "Ask the Experts",
+          "Build What's Next",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": "26-HP7WD",
+        "speakerIds": [
+          "6a455190cdc3e9ccad1148af",
+          "6a455191b6489297cdf4470e",
+          "6a4551920c0af35545e5c801",
+          "6a455194d8ff130ea02147a6",
+          "6a455196ebe56a13c81cf70e"
+        ]
+      },
+      {
+        "id": "6a43fad3cb493606d30664c1",
+        "title": "Ask the Experts: COE + Product + Strategy",
+        "start": "2026-11-09T21:00:00.000Z",
+        "end": "2026-11-10T00:00:00.000Z",
+        "tags": [
+          "Ask the Experts",
+          "Social",
+          "Build What's Next",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fae0b65a1357cd55f039",
+        "title": "Registration + Early Networking",
+        "start": "2026-11-09T23:00:00.000Z",
+        "end": "2026-11-10T01:30:00.000Z",
+        "tags": [
+          "Registration",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fae2ec7d893bdd6a7ac5",
+        "title": "Wellness Experience",
+        "start": "2026-11-09T23:30:00.000Z",
+        "end": "2026-11-10T00:30:00.000Z",
+        "tags": [
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fae31d293c68fe4c42fe",
+        "title": "Opening Reception",
+        "start": "2026-11-10T01:30:00.000Z",
+        "end": "2026-11-10T03:30:00.000Z",
+        "tags": [
+          "Social",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a425444fcf64ab444bb5ff5",
+        "title": "Registration + Breakfast + Expo",
+        "start": "2026-11-10T14:00:00.000Z",
+        "end": "2026-11-10T15:30:00.000Z",
+        "tags": [
+          "Meal",
+          "Registration",
+          "Expo",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a425445b8342385898e0c04",
+        "title": "Welcome to Summit",
+        "start": "2026-11-10T15:30:00.000Z",
+        "end": "2026-11-10T15:45:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top"
+        ],
+        "room": null,
+        "shrmCode": "26-LM2CZ",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f47",
+          "69c1bd542c5ef20511784f4f"
+        ]
+      },
+      {
+        "id": "6a4254464d6879c4c6ef8178",
+        "title": "Solve Tomorrow’s Problems: Harness Human Ingenuity to Navigate What’s Next",
+        "start": "2026-11-10T15:45:00.000Z",
+        "end": "2026-11-10T16:45:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top",
+          "Design More Human Recognition",
+          "Intelligence at Work"
+        ],
+        "room": null,
+        "shrmCode": "26-RV8KF",
+        "speakerIds": [
+          "6a3ad9e552223203c5c94590"
+        ]
+      },
+      {
+        "id": "6a42544741017b1af71d62cb",
+        "title": "The Science of What's Next: New Research on Recognition, Motivation, and the Future of Work",
+        "start": "2026-11-10T16:45:00.000Z",
+        "end": "2026-11-10T17:15:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Prove the Impact",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": "26-NR9NK",
+        "speakerIds": [
+          "69c1bd5b0ee18049f564556d"
+        ]
+      },
+      {
+        "id": "6a4254480b25585afebb14d2",
+        "title": "Break",
+        "start": "2026-11-10T17:15:00.000Z",
+        "end": "2026-11-10T17:30:00.000Z",
+        "tags": [
+          "Break"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a42544a72cce31235d24b41",
+        "title": "Product Vision: The Future of Recognition",
+        "start": "2026-11-10T17:30:00.000Z",
+        "end": "2026-11-10T18:30:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Build What's Next",
+          "Intelligence at Work"
+        ],
+        "room": null,
+        "shrmCode": "26-HP7WD",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f51"
+        ]
+      },
+      {
+        "id": "6a42544b72cce31235d24bf5",
+        "title": "Recognition at Global Scale: Driving Transformation Across a Distributed Workforce",
+        "start": "2026-11-10T18:30:00.000Z",
+        "end": "2026-11-10T19:00:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Case Study",
+          "Activate Recognition at Scale",
+          "Lead From the Top"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a42544ce4523f71734c1e90",
+        "title": "Lunch + Expo",
+        "start": "2026-11-10T19:00:00.000Z",
+        "end": "2026-11-10T20:30:00.000Z",
+        "tags": [
+          "Build What's Next"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a42544de4523f71734c1f01",
+        "title": "HR Thought Leader Session",
+        "start": "2026-11-10T20:00:00.000Z",
+        "end": "2026-11-10T20:45:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a42544e3cd792de4644c4af",
+        "title": "Evolving Enterprise Recognition Strategy at Scale",
+        "start": "2026-11-10T20:45:00.000Z",
+        "end": "2026-11-10T21:15:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Case Study",
+          "Prove the Impact",
+          "Activate Recognition at Scale",
+          "Lead From the Top"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a42544fe4523f71734c201b",
+        "title": "Break",
+        "start": "2026-11-10T21:15:00.000Z",
+        "end": "2026-11-10T21:30:00.000Z",
+        "tags": [],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a425450b8342385898e12af",
+        "title": "Driving Engagement That Lasts",
+        "start": "2026-11-10T21:30:00.000Z",
+        "end": "2026-11-10T22:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Lead From the Top",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a425451038facf920fd9c4b",
+        "title": "Make It Count: Building a Nominations Program That Drives Visibility, Values, and Participation",
+        "start": "2026-11-10T21:30:00.000Z",
+        "end": "2026-11-10T22:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Design More Human Recognition",
+          "Build What's Next"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a42545241017b1af71d68f3",
+        "title": "Global Scale, Local Impact: Strategies, Challenges, and Lessons Learned",
+        "start": "2026-11-10T21:30:00.000Z",
+        "end": "2026-11-10T22:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Activate Recognition at Scale"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a42545241017b1af71d69af",
+        "title": "Solving the Deskless Divide: Recognition for the Workforce You Can't Reach by Laptop",
+        "start": "2026-11-10T21:30:00.000Z",
+        "end": "2026-11-10T22:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Activate Recognition at Scale",
+          "Reach Every Worker"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fad9746cb2af70d6376b",
+        "title": "Break",
+        "start": "2026-11-10T22:15:00.000Z",
+        "end": "2026-11-10T22:30:00.000Z",
+        "tags": [],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fadb1d293c68fe4c3de4",
+        "title": "Rethinking Service Awards: Why Wait Five Years to Say Thanks?",
+        "start": "2026-11-10T22:30:00.000Z",
+        "end": "2026-11-10T23:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Design More Human Recognition",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": "26-LM2CZ",
+        "speakerIds": [
+          "69c1bd5b0ee18049f5645569"
+        ]
+      },
+      {
+        "id": "6a43fadfb88f9ca2599cc3d1",
+        "title": "Your Culture Is Hurting—And It's Not About Your Benefits Structure",
+        "start": "2026-11-10T22:30:00.000Z",
+        "end": "2026-11-10T23:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fadc43cbfa35f9dacf3c",
+        "title": "Beyond the Basics: Innovative Recognition Strategies from Leading Clients",
+        "start": "2026-11-10T22:30:00.000Z",
+        "end": "2026-11-10T23:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Prove the Impact",
+          "Build What's Next"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fade746cb2af70d63c85",
+        "title": "Show Me the Money: Building the Business Case for Recognition",
+        "start": "2026-11-10T22:30:00.000Z",
+        "end": "2026-11-10T23:15:00.000Z",
+        "tags": [
+          "Breakout",
+          "Prove the Impact",
+          "Lead From the Top"
+        ],
+        "room": null,
+        "shrmCode": "26-QX4TB",
+        "speakerIds": [
+          "69c1bd5b0ee18049f5645569",
+          "69c1bd542c5ef20511784f4b"
+        ]
+      },
+      {
+        "id": "6a43fae1cb493606d3066e77",
+        "title": "Networking + Expo + COE Office Hours",
+        "start": "2026-11-10T23:15:00.000Z",
+        "end": "2026-11-11T00:30:00.000Z",
+        "tags": [
+          "Ask the Experts",
+          "Social",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": "26-HP7WD",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f4b",
+          "69c1bd5b0ee18049f5645569",
+          "69c1bd5b0ee18049f5645565",
+          "6a3c30229870f1b88f3c0222",
+          "69c1bd542c5ef20511784f4d",
+          "69c1bd542c5ef20511784f49",
+          "69c1bd5b0ee18049f564556d"
+        ]
+      },
+      {
+        "id": "6a43fae47e825d638f0ab099",
+        "title": "Recognize Awards Dinner + Entertainment",
+        "start": "2026-11-11T01:30:00.000Z",
+        "end": "2026-11-11T04:30:00.000Z",
+        "tags": [
+          "Social",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "69c1bdc687d98964f92e228c",
+        "title": "An Evening of Recognition: Awards Dinner & Celebration",
+        "start": "2026-11-11T01:30:00.000Z",
+        "end": "2026-11-11T04:00:00.000Z",
+        "tags": [],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fabf7e825d638f0a91b3",
+        "title": "Breakfast + Expo",
+        "start": "2026-11-11T14:30:00.000Z",
+        "end": "2026-11-11T16:00:00.000Z",
+        "tags": [
+          "Meal",
+          "Expo",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fac0388093580c1f8c5f",
+        "title": "Welcome Back",
+        "start": "2026-11-11T16:00:00.000Z",
+        "end": "2026-11-11T16:10:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top"
+        ],
+        "room": null,
+        "shrmCode": "26-QX4TB",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f47",
+          "69c1bd542c5ef20511784f4f"
+        ]
+      },
+      {
+        "id": "6a43fac293b79d41a4950774",
+        "title": "Dominating Disruption and Pushing Limits: Unlocking the mental and social skills of success in a fast-changing world of work",
+        "start": "2026-11-11T16:15:00.000Z",
+        "end": "2026-11-11T17:15:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": "26-HP7WD",
+        "speakerIds": [
+          "6a3c3023e0a144454ef079c9"
+        ]
+      },
+      {
+        "id": "6a43fac3cb493606d3065931",
+        "title": "Break",
+        "start": "2026-11-11T17:15:00.000Z",
+        "end": "2026-11-11T17:30:00.000Z",
+        "tags": [
+          "Break"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fac4e93808f7c04f19a1",
+        "title": "Recognition in Healthcare: Driving Impact Where It Matters Most",
+        "start": "2026-11-11T17:30:00.000Z",
+        "end": "2026-11-11T18:00:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Case Study",
+          "Lead From the Top",
+          "Reach Every Worker"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fac843cbfa35f9dac164",
+        "title": "AI and Recognition: What’s Useful, What’s Changing, and What Still Needs a Human Touch",
+        "start": "2026-11-11T18:00:00.000Z",
+        "end": "2026-11-11T18:45:00.000Z",
+        "tags": [
+          "Breakout",
+          "Intelligence at Work"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fac64ba27bf262755232",
+        "title": "Seen, Safe, Supported: How Recognition Builds Belonging and Wellbeing",
+        "start": "2026-11-11T18:00:00.000Z",
+        "end": "2026-11-11T18:45:00.000Z",
+        "tags": [
+          "Breakout",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": "26-QX4TB",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f4d",
+          "6a3c30229870f1b88f3c0222"
+        ]
+      },
+      {
+        "id": "6a43fac7cfb19a045df89cf0",
+        "title": "Engage + Survey Strategy: Turning Feedback Into Program Momentum",
+        "start": "2026-11-11T18:00:00.000Z",
+        "end": "2026-11-11T18:45:00.000Z",
+        "tags": [
+          "Breakout",
+          "Prove the Impact",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fac90833f2d7744491d9",
+        "title": "Prove the Impact: ROI, Business Cases, and Winning Leadership Buy-In",
+        "start": "2026-11-11T18:00:00.000Z",
+        "end": "2026-11-11T18:45:00.000Z",
+        "tags": [
+          "Breakout",
+          "Prove the Impact",
+          "Lead From the Top"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43facd5cb58e5c87356829",
+        "title": "Beyond Go-Live: Taking Your Recognition Program to the Next Level",
+        "start": "2026-11-11T18:45:00.000Z",
+        "end": "2026-11-11T19:45:00.000Z",
+        "tags": [
+          "Workshop",
+          "Lead From the Top",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": "26-RV8KF",
+        "speakerIds": [
+          "69c1bd5b0ee18049f5645569",
+          "69c1bd5b0ee18049f5645565"
+        ]
+      },
+      {
+        "id": "6a43facc044046a1ca915318",
+        "title": "From Set Up to Scaled Up: How to Get More from Your Awardco Platform",
+        "start": "2026-11-11T18:45:00.000Z",
+        "end": "2026-11-11T19:45:00.000Z",
+        "tags": [
+          "Workshop",
+          "Build What's Next",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": "26-NR9NK",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f4d"
+        ]
+      },
+      {
+        "id": "6a43faca746cb2af70d62a1a",
+        "title": "Recognition Reset: Change Management Strategies for Program Transitions",
+        "start": "2026-11-11T18:45:00.000Z",
+        "end": "2026-11-11T19:45:00.000Z",
+        "tags": [
+          "Workshop",
+          "Activate Recognition at Scale",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43facb1d293c68fe4c33bc",
+        "title": "Making Recognition Matter: Build the Case, Measure the Impact",
+        "start": "2026-11-11T18:45:00.000Z",
+        "end": "2026-11-11T19:45:00.000Z",
+        "tags": [
+          "Workshop",
+          "Prove the Impact",
+          "Lead From the Top"
+        ],
+        "room": null,
+        "shrmCode": "26-HP7WD",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f4b",
+          "6a3c30229870f1b88f3c0222"
+        ]
+      },
+      {
+        "id": "6a43facead9534c30a192e58",
+        "title": "Lunch",
+        "start": "2026-11-11T19:45:00.000Z",
+        "end": "2026-11-11T20:15:00.000Z",
+        "tags": [
+          "Meal",
+          "Expo",
+          "Program DNA"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fad0157110d10bd19281",
+        "title": "Special Guest Keynote: To Be Announced",
+        "start": "2026-11-11T20:15:00.000Z",
+        "end": "2026-11-11T21:00:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": null,
+        "speakerIds": []
+      },
+      {
+        "id": "6a43fad6388093580c1fa555",
+        "title": "O.W.N. YOUR LEADERSHIP™ ",
+        "start": "2026-11-11T21:00:00.000Z",
+        "end": "2026-11-11T22:00:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": "26-NR9NK",
+        "speakerIds": [
+          "6a3ad9e652223203c5c945e4"
+        ]
+      },
+      {
+        "id": "6a43fad81d9bae5dfcdd4f5e",
+        "title": "Closing Remarks: Recognize What's Next",
+        "start": "2026-11-11T22:00:00.000Z",
+        "end": "2026-11-11T22:10:00.000Z",
+        "tags": [
+          "Mainstage",
+          "Lead From the Top",
+          "Design More Human Recognition"
+        ],
+        "room": null,
+        "shrmCode": "26-QX4TB",
+        "speakerIds": [
+          "69c1bd542c5ef20511784f47",
+          "69c1bd542c5ef20511784f4f"
+        ]
+      }
+    ],
+    "speakers": {
+      "69c1bd542c5ef20511784f4b": {
+        "id": "69c1bd542c5ef20511784f4b",
+        "name": "Christi Gilhoi",
+        "jobTitle": "Employee Experience Executive, COE",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd542c5ef20511784f4b",
+            "url": "/api/images/mock-69c1bd542c5ef20511784f4b"
+          }
+        }
+      },
+      "69c1bd5b0ee18049f5645569": {
+        "id": "69c1bd5b0ee18049f5645569",
+        "name": "Laura Shanley",
+        "jobTitle": "Employee Experience Executive, COE",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd5b0ee18049f5645569",
+            "url": "/api/images/mock-69c1bd5b0ee18049f5645569"
+          }
+        }
+      },
+      "69c1bd5b0ee18049f5645565": {
+        "id": "69c1bd5b0ee18049f5645565",
+        "name": "Katie Bundy",
+        "jobTitle": "Employee Experience Executive, COE",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd5b0ee18049f5645565",
+            "url": "/api/images/mock-69c1bd5b0ee18049f5645565"
+          }
+        }
+      },
+      "6a3c30229870f1b88f3c0222": {
+        "id": "6a3c30229870f1b88f3c0222",
+        "name": "Kelly Satterfield",
+        "jobTitle": "Employee Experience Executive, COE",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a3c30229870f1b88f3c0222",
+            "url": "/api/images/mock-6a3c30229870f1b88f3c0222"
+          }
+        }
+      },
+      "69c1bd542c5ef20511784f4d": {
+        "id": "69c1bd542c5ef20511784f4d",
+        "name": "ShaNae McCleskey",
+        "jobTitle": "Director, Technical Account Services",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd542c5ef20511784f4d",
+            "url": "/api/images/mock-69c1bd542c5ef20511784f4d"
+          }
+        }
+      },
+      "69c1bd542c5ef20511784f49": {
+        "id": "69c1bd542c5ef20511784f49",
+        "name": "Nick Frazier",
+        "jobTitle": "Sr. Director, Client Success Enablement",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd542c5ef20511784f49",
+            "url": "/api/images/mock-69c1bd542c5ef20511784f49"
+          }
+        }
+      },
+      "69c1bd5b0ee18049f564556d": {
+        "id": "69c1bd5b0ee18049f564556d",
+        "name": "Sarah Marrs",
+        "jobTitle": "Head of COE Science",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd5b0ee18049f564556d",
+            "url": "/api/images/mock-69c1bd5b0ee18049f564556d"
+          }
+        }
+      },
+      "6a455190cdc3e9ccad1148af": {
+        "id": "6a455190cdc3e9ccad1148af",
+        "name": "Sabina Carlheim-Gyllenskiold",
+        "jobTitle": "Global Director of Solution Engineering",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a455190cdc3e9ccad1148af",
+            "url": "/api/images/mock-6a455190cdc3e9ccad1148af"
+          }
+        }
+      },
+      "6a455191b6489297cdf4470e": {
+        "id": "6a455191b6489297cdf4470e",
+        "name": "Katie Bell",
+        "jobTitle": "Principal Solution Engineer",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a455191b6489297cdf4470e",
+            "url": "/api/images/mock-6a455191b6489297cdf4470e"
+          }
+        }
+      },
+      "6a4551920c0af35545e5c801": {
+        "id": "6a4551920c0af35545e5c801",
+        "name": "Shane Stanley",
+        "jobTitle": "Senior Solutions Engineer",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a4551920c0af35545e5c801",
+            "url": "/api/images/mock-6a4551920c0af35545e5c801"
+          }
+        }
+      },
+      "6a455194d8ff130ea02147a6": {
+        "id": "6a455194d8ff130ea02147a6",
+        "name": "Eric Roley",
+        "jobTitle": "Senior Solutions Engineer",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a455194d8ff130ea02147a6",
+            "url": "/api/images/mock-6a455194d8ff130ea02147a6"
+          }
+        }
+      },
+      "6a455196ebe56a13c81cf70e": {
+        "id": "6a455196ebe56a13c81cf70e",
+        "name": "Kevin Mefford",
+        "jobTitle": "Senior Principal Solutions Engineer",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a455196ebe56a13c81cf70e",
+            "url": "/api/images/mock-6a455196ebe56a13c81cf70e"
+          }
+        }
+      },
+      "69c1bd542c5ef20511784f47": {
+        "id": "69c1bd542c5ef20511784f47",
+        "name": "Steve Sonnenberg",
+        "jobTitle": "CEO",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd542c5ef20511784f47",
+            "url": "/api/images/mock-69c1bd542c5ef20511784f47"
+          }
+        }
+      },
+      "69c1bd542c5ef20511784f4f": {
+        "id": "69c1bd542c5ef20511784f4f",
+        "name": "Paige Bennett Carr",
+        "jobTitle": "Senior Director of Experiential Marketing",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd542c5ef20511784f4f",
+            "url": "/api/images/mock-69c1bd542c5ef20511784f4f"
+          }
+        }
+      },
+      "6a3ad9e552223203c5c94590": {
+        "id": "6a3ad9e552223203c5c94590",
+        "name": "Heather McGowan",
+        "jobTitle": "Future-of-work strategist, Forbes Top Futurist",
+        "company": null,
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a3ad9e552223203c5c94590",
+            "url": "/api/images/mock-6a3ad9e552223203c5c94590"
+          }
+        }
+      },
+      "69c1bd542c5ef20511784f51": {
+        "id": "69c1bd542c5ef20511784f51",
+        "name": "Dillon Winspear",
+        "jobTitle": "VP, Product",
+        "company": "Awardco",
+        "headshots": {
+          "transparent": {
+            "id": "mock-69c1bd542c5ef20511784f51",
+            "url": "/api/images/mock-69c1bd542c5ef20511784f51"
+          }
+        }
+      },
+      "6a3c3023e0a144454ef079c9": {
+        "id": "6a3c3023e0a144454ef079c9",
+        "name": "Henna Pryor",
+        "jobTitle": "Workplace Performance Expert",
+        "company": "Pryority",
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a3c3023e0a144454ef079c9",
+            "url": "/api/images/mock-6a3c3023e0a144454ef079c9"
+          }
+        }
+      },
+      "6a3ad9e652223203c5c945e4": {
+        "id": "6a3ad9e652223203c5c945e4",
+        "name": "Vernice “FlyGirl” Armour",
+        "jobTitle": "America’s first Black female combat pilot",
+        "company": null,
+        "headshots": {
+          "transparent": {
+            "id": "mock-6a3ad9e652223203c5c945e4",
+            "url": "/api/images/mock-6a3ad9e652223203c5c945e4"
+          }
+        }
+      }
+    },
+    "warnings": []
+  },
+  "imageSources": {
+    "mock-69c1bd542c5ef20511784f4b": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42c09657d616a9a025134f_Christi%20Gilhoi.png",
+    "mock-69c1bd5b0ee18049f5645569": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42bff2d8690a0f4fbb14d8_Laura%20Shanley.png",
+    "mock-69c1bd5b0ee18049f5645565": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a4fabe4290780d3a8cad503_Katie%20Bundy.png",
+    "mock-6a3c30229870f1b88f3c0222": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42bc1b0c489f84acdf47e2_Kelly%20Satterfield.png",
+    "mock-69c1bd542c5ef20511784f4d": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42c076fbaeff30d17a73ab_ShaNae%20McCleskey.png",
+    "mock-69c1bd542c5ef20511784f49": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42c0b3d13c54e4096b95a4_Nick%20Frazier.png",
+    "mock-69c1bd5b0ee18049f564556d": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42bfd3ea2c229e1e4ce071_Sarah%20Marrs.png",
+    "mock-6a455190cdc3e9ccad1148af": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a455a1fef03856c06bbe928_Sabina%20Carlheim-Gyllenskiold.png",
+    "mock-6a455191b6489297cdf4470e": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a455a0c02cd28aeed63ebf1_Katie%20Bell.png",
+    "mock-6a4551920c0af35545e5c801": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a4559f80bdb452858cc2163_Shane%20Stanley.png",
+    "mock-6a455194d8ff130ea02147a6": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a4559e28be8af7416c16d7a_Eric%20Roley.png",
+    "mock-6a455196ebe56a13c81cf70e": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a4558314db3a8e656a77d71_Kevin%20Mefford.png",
+    "mock-69c1bd542c5ef20511784f47": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42c0da4216d4d1360bc621_Steve%20Sonnenberg.png",
+    "mock-69c1bd542c5ef20511784f4f": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/69caf2524eb6f14f31e5d29d_Paige-Bennett-Carr.png",
+    "mock-6a3ad9e552223203c5c94590": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42bf879600defdc5c48f44_Heather%20McGowan.png",
+    "mock-69c1bd542c5ef20511784f51": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a4d4e7856782ee89c95a30c_6a42c0589600defdc5c529e4_Dillon%2520Winspear.png",
+    "mock-6a3c3023e0a144454ef079c9": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42bbf6aed9d5b271cc560c_Henna%20Pryor.png",
+    "mock-6a3ad9e652223203c5c945e4": "https://cdn.prod.website-files.com/6809c7073641f7a4861d5cf7/6a42bf9d9600defdc5c49a1e_Vernice%20Armour.png"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules
+dist
+.wrangler
+*.log
+.DS_Store
+
+# Secrets — never commit
+.dev.vars
+.env*
+
+# Licensed slide fonts (Crystal, Emilio) — kept out of git; see public/fonts/README.md
+public/fonts/*.otf
+public/fonts/*.woff2
