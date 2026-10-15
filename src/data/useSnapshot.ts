@@ -52,5 +52,10 @@ export function useSnapshot() {
     };
   }, [load]);
 
-  return { ...state, sync };
+  /** Swap in a snapshot produced elsewhere (e.g. after Fetch Bizzabo re-synced). */
+  const replaceSnapshot = useCallback((snapshot: Snapshot) => {
+    setState((s) => ({ ...s, snapshot, error: null }));
+  }, []);
+
+  return { ...state, sync, replaceSnapshot };
 }

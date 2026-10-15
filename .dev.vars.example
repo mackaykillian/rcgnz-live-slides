@@ -2,3 +2,8 @@
 # Scopes: data.records:read, schema.bases:read — access: the RCGNZ base only.
 # Leave empty to run with mock data.
 AIRTABLE_TOKEN=
+
+# Passcode for the sidebar's "Admin only" actions (Fetch Bizzabo).
+ADMIN_PASSCODE=
+# Shared with the airtable-bizzabo-sync worker (its MANUAL_SYNC_SECRET).
+BIZZABO_SYNC_SECRET=

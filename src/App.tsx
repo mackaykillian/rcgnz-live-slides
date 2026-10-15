@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { AdminAuthError, clearAdminPasscode, fetchBizzabo, getAdminPasscode, setAdminPasscode } from './data/admin';
 import { useSnapshot } from './data/useSnapshot';
 import { copySlide, downloadSlide, downloadSlides } from './export/exportSlides';
 import { DEFAULT_SORT, filterAndSortSlides, type SlideQuery, type SortKey } from './lib/filterSlides';
@@ -12,6 +13,7 @@ import { Filters } from './ui/Filters';
 import { GalleryView } from './ui/GalleryView';
 import { ItemOverlay } from './ui/ItemOverlay';
 import { ListView } from './ui/ListView';
+import { PasscodeDialog } from './ui/PasscodeDialog';
 import { SelectionBar } from './ui/SelectionBar';
 import { Sidebar } from './ui/Sidebar';
 import { SortButton } from './ui/SortButton';
@@ -24,7 +26,7 @@ import { SlideshowGallery } from './ui/slideshow/SlideshowGallery';
 const VIEW_MODES = ['gallery', 'list'] as const;
 
 export default function App() {
-  const { snapshot, loading, syncing, error, sync } = useSnapshot();
+  const { snapshot, loading, syncing, error, sync, replaceSnapshot } = useSnapshot();
   const [route, navigate] = useRoute();
   const [viewMode, setViewMode] = useLocalStorage<ViewMode>('rcgnz:viewMode', 'gallery', VIEW_MODES);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -120,6 +122,35 @@ export default function App() {
     );
   };
 
+  // "Fetch Bizzabo" (admin only): Bizzabo → Airtable, then Airtable → slides.
+  const [bizzaboRunning, setBizzaboRunning] = useState(false);
+  const [passcodePrompt, setPasscodePrompt] = useState<{ error: string | null } | null>(null);
+
+  const runBizzaboFetch = async (passcode: string) => {
+    setBizzaboRunning(true);
+    try {
+      const result = await fetchBizzabo(passcode);
+      if (result.snapshot) replaceSnapshot(result.snapshot);
+      show('success', 'Bizzabo fetch success');
+    } catch (err) {
+      if (err instanceof AdminAuthError) {
+        clearAdminPasscode();
+        setPasscodePrompt({ error: err.message });
+      } else {
+        console.error(err);
+        show('error', `Bizzabo fetch failed: ${(err as Error).message}`);
+      }
+    } finally {
+      setBizzaboRunning(false);
+    }
+  };
+
+  const onFetchBizzabo = () => {
+    const saved = getAdminPasscode();
+    if (saved) void runBizzaboFetch(saved);
+    else setPasscodePrompt({ error: null });
+  };
+
   const onSync = async () => {
     const ok = await sync();
     show(ok ? 'success' : 'error', ok ? 'Synced with Airtable' : 'Sync failed — see console');
@@ -148,6 +179,8 @@ export default function App() {
           syncing={syncing}
           onSync={onSync}
           onCollapse={() => setSidebarCollapsed(true)}
+          bizzaboRunning={bizzaboRunning}
+          onFetchBizzabo={onFetchBizzabo}
         />
       )}
 
@@ -225,6 +258,18 @@ export default function App() {
           )}
         </div>
       </main>
+
+      {passcodePrompt && (
+        <PasscodeDialog
+          error={passcodePrompt.error}
+          onCancel={() => setPasscodePrompt(null)}
+          onSubmit={(passcode) => {
+            setAdminPasscode(passcode);
+            setPasscodePrompt(null);
+            void runBizzaboFetch(passcode);
+          }}
+        />
+      )}
 
       {openItem && (
         <ItemOverlay

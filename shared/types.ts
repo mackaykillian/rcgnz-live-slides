@@ -61,3 +61,11 @@ export interface SyncResponse {
   snapshot?: Snapshot;
   error?: string;
 }
+
+/** Response from admin actions (e.g. Fetch Bizzabo). */
+export interface AdminResponse {
+  ok: boolean;
+  /** Fresh snapshot when the action also re-synced the slides. */
+  snapshot?: Snapshot;
+  error?: string;
+}

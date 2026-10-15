@@ -1,4 +1,5 @@
 import type { SyncResponse } from '../shared/types';
+import { handleBizzaboFetch } from './admin';
 import { readImageSources, readSnapshot, syncFromAirtable } from './sync';
 
 const json = (body: unknown, init: ResponseInit = {}) =>
@@ -63,6 +64,7 @@ export default {
 
     if (pathname === '/api/snapshot' && request.method === 'GET') return handleSnapshot(env);
     if (pathname === '/api/sync' && request.method === 'POST') return handleSync(env);
+    if (pathname === '/api/admin/bizzabo-fetch' && request.method === 'POST') return handleBizzaboFetch(request, env);
 
     const image = pathname.match(/^\/api\/images\/([^/]+)$/);
     if (image && request.method === 'GET') return handleImage(decodeURIComponent(image[1]), env, ctx);

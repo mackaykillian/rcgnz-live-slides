@@ -106,6 +106,26 @@ npm run deploy                     # builds, then `wrangler deploy`
 > The sync uses little CPU, but the Workers **Paid** plan is the safe choice:
 > the free plan caps CPU at 10 ms per request.
 
+## Admin: Fetch Bizzabo
+
+The sidebar's **Admin only → Fetch Bizzabo** runs the separate
+`airtable-bizzabo-sync` worker (Bizzabo → Airtable) on demand. After that, it
+re-syncs this app from Airtable. It goes through `POST /api/admin/bizzabo-fetch`,
+which requires the admin passcode. The browser asks for it once and remembers it.
+The app reaches the Bizzabo worker through a **service binding** (`BIZZABO_SYNC`
+in `wrangler.jsonc`), not its public URL. Cloudflare blocks one Worker from
+fetching another's `workers.dev` URL on the same account (error 1042, which
+shows up as a 404). In `npm run dev` the Bizzabo worker isn't running, so this
+action reports that it can't be reached. Test it on the deployed app.
+
+Secrets (`npx wrangler secret put <NAME>`; locally in `.dev.vars`):
+
+| Worker | Secret | |
+| --- | --- | --- |
+| rcgnz-live-slides | `ADMIN_PASSCODE` | Passcode admins type in the app |
+| rcgnz-live-slides | `BIZZABO_SYNC_SECRET` | Same value as below |
+| airtable-bizzabo-sync | `MANUAL_SYNC_SECRET` | Enables its `POST /` manual trigger |
+
 ## Scripts
 
 | Script | |

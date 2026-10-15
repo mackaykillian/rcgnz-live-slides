@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   CaretDown,
   CaretRight,
+  Cloud,
   FigmaLogo,
   ImageSquare,
   ImagesSquare,
@@ -26,6 +27,8 @@ interface Props {
   syncing: boolean;
   onSync: () => void;
   onCollapse: () => void;
+  bizzaboRunning: boolean;
+  onFetchBizzabo: () => void;
 }
 
 type Highlight = 'accent' | 'neutral' | 'none';
@@ -102,7 +105,7 @@ function ExternalItem(props: { href: string; icon: ReactNode; label: string }) {
   );
 }
 
-export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse }: Props) {
+export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse, bizzaboRunning, onFetchBizzabo }: Props) {
   const [slidesOpen, setSlidesOpen] = useState(true);
   const [showOpen, setShowOpen] = useState(true);
 
@@ -188,6 +191,24 @@ export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse }
               <ExternalItem href={LINKS.airtable} icon={<Table size={16} />} label="Airtable base" />
               <ExternalItem href={LINKS.figma} icon={<FigmaLogo size={16} />} label="Figma file" />
             </div>
+          </div>
+
+          <div className="flex flex-col gap-[4px]">
+            <p className="text-[10px] leading-none text-ink-muted">Admin only</p>
+            <button
+              type="button"
+              onClick={onFetchBizzabo}
+              disabled={bizzaboRunning}
+              aria-busy={bizzaboRunning}
+              className={`flex w-full items-center justify-between rounded-[6px] px-[8px] py-[7px] text-[14px] leading-[18px] text-ink hover:bg-overlay-subtle disabled:cursor-progress disabled:hover:bg-transparent ${focusRing}`}
+            >
+              <span className="flex items-center gap-[6px]">
+                <Cloud size={16} />
+                Fetch Bizzabo
+              </span>
+              {/* Only shown while the fetch is running. */}
+              {bizzaboRunning && <ArrowsClockwise size={16} className="animate-spin" aria-label="Fetching" />}
+            </button>
           </div>
         </div>
 
