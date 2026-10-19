@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowsOut, CaretUpDown, Play, Warning } from '@phosphor-icons/react';
+import { ArrowsIn, ArrowsOut, CaretUpDown, Play, Warning } from '@phosphor-icons/react';
 import type { Session, Speaker, Snapshot } from '../../shared/types';
 import { EVENT_DAYS } from '../config';
 import { eventDayKey, formatDay, formatTime } from '../lib/time';
-import { AgendaPresenter } from './AgendaPresenter';
 import { CalendarGrid } from './CalendarGrid';
 import {
   buildCalendarDay,
   formatMinutes,
   isShownInCalendar,
   sessionsWithoutLocation,
-  snapTo15,
   timeOptions,
   timeReference,
   type TimeMode,
@@ -37,7 +35,7 @@ export function CalendarView({ snapshot, day, onDay }: Props) {
   const selected = day && EVENT_DAYS.includes(day) ? day : EVENT_DAYS.includes(todayKey) ? todayKey : EVENT_DAYS[0]!;
 
   const [timeMode, setTimeMode] = useState<TimeMode>({ kind: 'live' });
-  const [presenting, setPresenting] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const live = timeMode.kind === 'live';
   const reference = timeReference(timeMode, now, selected);
 
@@ -56,38 +54,43 @@ export function CalendarView({ snapshot, day, onDay }: Props) {
   // These are hidden from the timeline, so call them out until they get a location.
   const unlocated = useMemo(() => sessionsWithoutLocation(snapshot.sessions), [snapshot]);
 
-  // Full screen holds the time 25% down; in live mode it repositions every 15 minutes.
-  const anchorMin = reference.day === selected ? (live ? snapTo15(reference.minutes) : reference.minutes) : null;
-
-  // Leaving browser fullscreen (Esc, or the browser's own UI) ends the presentation.
+  // Fullscreen is this same view expanded over the whole screen (sidebar hidden),
+  // so the day, scroll position and time mode carry over in both directions.
+  // Leaving browser fullscreen (Esc, or the browser's own UI) returns to normal.
   useEffect(() => {
     const onChange = () => {
-      if (!document.fullscreenElement) setPresenting(false);
+      if (!document.fullscreenElement) setFullscreen(false);
     };
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
-  // Browsers without the Fullscreen API still get the overlay; Esc closes it.
+  // Browsers without the Fullscreen API still get the expanded view; Esc closes it.
   useEffect(() => {
-    if (!presenting || document.fullscreenElement) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setPresenting(false);
+    if (!fullscreen || document.fullscreenElement) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFullscreen(false);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [presenting]);
+  }, [fullscreen]);
 
-  const enterFullscreen = () => {
-    setPresenting(true);
+  const toggleFullscreen = () => {
+    if (fullscreen) {
+      if (document.fullscreenElement) void document.exitFullscreen();
+      else setFullscreen(false);
+      return;
+    }
+    setFullscreen(true);
     // Must run inside the click handler — browsers only allow fullscreen from a user gesture.
     document.documentElement.requestFullscreen?.().catch(() => {});
   };
-  const exitFullscreen = () => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else setPresenting(false);
-  };
 
   return (
-    <div className="flex h-full flex-col gap-[16px]">
+    <div
+      className={`flex flex-col gap-[16px] ${fullscreen ? 'fixed inset-0 z-50 bg-ink p-[24px]' : 'h-full'}`}
+      role={fullscreen ? 'dialog' : undefined}
+      aria-modal={fullscreen || undefined}
+      aria-label={fullscreen ? 'Agenda Timeline (fullscreen)' : undefined}
+    >
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-[16px]">
         <div role="tablist" aria-label="Event day" className="flex gap-[4px]">
           {EVENT_DAYS.map((d) => {
@@ -151,12 +154,12 @@ export function CalendarView({ snapshot, day, onDay }: Props) {
 
           <button
             type="button"
-            onClick={enterFullscreen}
-            disabled={!hasSessions}
-            className={`flex items-center gap-[6px] rounded-[8px] bg-white/10 px-[12px] py-[8px] text-[14px] leading-[1.5] text-white hover:bg-white/15 disabled:opacity-50 ${focusRing}`}
+            onClick={toggleFullscreen}
+            aria-pressed={fullscreen}
+            className={`flex items-center gap-[6px] rounded-[8px] bg-white/10 px-[12px] py-[8px] text-[14px] leading-[1.5] text-white hover:bg-white/15 ${focusRing}`}
           >
-            <ArrowsOut size={16} />
-            Fullscreen
+            {fullscreen ? <ArrowsIn size={16} /> : <ArrowsOut size={16} />}
+            {fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           </button>
         </div>
       </div>
@@ -196,23 +199,10 @@ export function CalendarView({ snapshot, day, onDay }: Props) {
           calendar={calendar}
           speakersFor={speakersFor}
           reference={reference}
-          mode={{ kind: 'scroll' }}
           scrollKey={`${selected}|${live ? 'live' : timeMode.minutes}`}
         />
       )}
 
-      {presenting && (
-        <AgendaPresenter
-          day={selected}
-          dayLabel={dayTabLabel(selected)}
-          calendar={calendar}
-          speakersFor={speakersFor}
-          reference={reference}
-          live={live}
-          anchorMin={anchorMin}
-          onExit={exitFullscreen}
-        />
-      )}
     </div>
   );
 }

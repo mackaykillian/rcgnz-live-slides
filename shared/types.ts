@@ -40,6 +40,11 @@ export interface Session {
   /** Room name. Not in Airtable yet — always null for now. */
   room: string | null;
   shrmCode: string | null;
+  /**
+   * Seat registration — present only when registration is on and the session
+   * has a capacity. `count` is 0 when Airtable's count is blank.
+   */
+  registration?: { count: number; capacity: number } | null;
   /** Speakers in Airtable order. Ids resolve via `Snapshot.speakers`. */
   speakerIds: string[];
 }

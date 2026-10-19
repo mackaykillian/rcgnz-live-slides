@@ -3,16 +3,16 @@ import type { Session } from '../../shared/types';
 import {
   assignLanes,
   buildCalendarDay,
-  fixedWindowOffset,
   formatHour,
   formatMinutes,
   isPast,
   minutesOfDay,
   NO_ROOM,
   PX_PER_MINUTE,
+  registrationStatus,
   sessionTypeColor,
   sessionsWithoutLocation,
-  snapTo15,
+  scrollOffsetForTime,
   timeOptions,
   timeReference,
 } from './layout';
@@ -131,16 +131,15 @@ describe('current time indicator', () => {
   it('offers 15-minute steps and formats them', () => {
     expect(timeOptions(480, 540).map(formatMinutes)).toEqual(['8:00 AM', '8:15 AM', '8:30 AM', '8:45 AM', '9:00 AM']);
     expect(formatMinutes(12 * 60 + 5)).toBe('12:05 PM');
-    expect(snapTo15(607)).toBe(600);
   });
 
   it('puts the time 25% down the window, clamped to the day', () => {
     const total = 10 * 60 * PX_PER_MINUTE; // 8 AM – 6 PM
     const win = 600;
-    expect(fixedWindowOffset(12 * 60, 8 * 60, total, win)).toBeCloseTo(4 * 60 * PX_PER_MINUTE - 150);
-    expect(fixedWindowOffset(8 * 60, 8 * 60, total, win)).toBe(0); // can't go above the day start
-    expect(fixedWindowOffset(18 * 60, 8 * 60, total, win)).toBe(total - win); // or past the end
-    expect(fixedWindowOffset(null, 8 * 60, total, win)).toBe(0);
+    expect(scrollOffsetForTime(12 * 60, 8 * 60, total, win)).toBeCloseTo(4 * 60 * PX_PER_MINUTE - 150);
+    expect(scrollOffsetForTime(8 * 60, 8 * 60, total, win)).toBe(0); // can't go above the day start
+    expect(scrollOffsetForTime(18 * 60, 8 * 60, total, win)).toBe(total - win); // or past the end
+    expect(scrollOffsetForTime(null, 8 * 60, total, win)).toBe(0);
   });
 });
 
@@ -157,5 +156,15 @@ describe('sessionsWithoutLocation', () => {
   it('hides Montage Entrance from the timeline', () => {
     const day = buildCalendarDay([session('shuttle', 'Montage Entrance', '15:45', '16:00')], '2026-11-10');
     expect(day.columns.map((c) => c.room)).not.toContain('Montage Entrance');
+  });
+});
+
+describe('registrationStatus', () => {
+  it('is Open with 25% or more of seats left, Low below that, Full when taken', () => {
+    expect(registrationStatus({ count: 2, capacity: 20 })).toBe('open');
+    expect(registrationStatus({ count: 15, capacity: 20 })).toBe('open'); // exactly 25% left
+    expect(registrationStatus({ count: 17, capacity: 20 })).toBe('low');
+    expect(registrationStatus({ count: 20, capacity: 20 })).toBe('full');
+    expect(registrationStatus({ count: 23, capacity: 20 })).toBe('full'); // oversubscribed
   });
 });

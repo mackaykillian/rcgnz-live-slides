@@ -48,6 +48,18 @@ export function asAttachment(value: unknown): AirtableAttachment | null {
   return first ?? null;
 }
 
+export function asNumber(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  const text = asText(value);
+  const n = text == null ? NaN : Number(text);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function asBoolean(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(asBoolean);
+  return value === true || (typeof value === 'string' && value.trim().toLowerCase() === 'true');
+}
+
 export function asIsoDate(value: unknown): string | null {
   const text = asText(value);
   if (!text) return null;
@@ -106,6 +118,7 @@ export function normalize({ sessions, speakers, headshots }: NormalizeInput): No
       tags: asTextList(rec.fields[S.tags]),
       room: S.room ? asText(rec.fields[S.room]) : null,
       shrmCode: asText(rec.fields[S.shrmCode]),
+      registration: toRegistration(rec.fields[S.registration], rec.fields[S.registrationCount], rec.fields[S.registrationCapacity]),
       speakerIds: asRecordIds(rec.fields[S.speakers]),
     };
   });
@@ -136,6 +149,13 @@ export function normalize({ sessions, speakers, headshots }: NormalizeInput): No
   }
 
   return { sessions: outSessions, speakers: outSpeakers, imageSources, warnings };
+}
+
+/** Registration only counts when it's switched on and there's a real (positive) capacity. */
+export function toRegistration(enabled: unknown, count: unknown, capacity: unknown): Session['registration'] {
+  const cap = asNumber(capacity);
+  if (!asBoolean(enabled) || cap == null || cap <= 0) return null;
+  return { count: Math.max(0, asNumber(count) ?? 0), capacity: cap };
 }
 
 /** Airtable formula matching the event across text, single-select and linked-record fields. */

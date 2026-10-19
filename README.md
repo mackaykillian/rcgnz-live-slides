@@ -96,12 +96,16 @@ Browser ◀── /api/images/:id ◀── KV cache ◀── Airtable attachme
   - Awardco HQ, Montage Entrance and sessions without a location are hidden
     (`HIDDEN_CALENDAR_ROOMS`). A warning above the timeline lists any sessions
     missing a location.
+  - **Registration tag** (bottom-right of a session) shows registered/capacity
+    and Open / Low (under 25% of seats left) / Full. It only appears when
+    "Session Registration" is checked and there's a capacity. A blank count
+    is treated as 0.
   - **Current time:** a green line marks it, and sessions that have ended are
     dimmed to 50%. **Live** follows the clock; picking a time in the
     15-minute picker pins it instead (manual mode, applies to the day shown).
-  - **Fullscreen** shows a 16:9 display view with all rooms and no scrolling.
-    The time sits 25% from the top, and in Live mode the view repositions every
-    15 minutes. Press Esc to exit.
+  - **Fullscreen** expands this same view over the whole screen (sidebar
+    hidden). Day tabs, scrolling and the time controls keep working. Click
+    **Exit fullscreen** or press Esc to return.
 - **File names**. `MMDDYYYY_HHmm_SessionTitle_Template.png`, in event time
   (America/Denver). Batch downloads come as a zip.
 

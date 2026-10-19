@@ -2,10 +2,12 @@ import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import type { Session, Speaker } from '../../shared/types';
 import { formatTimeRange } from '../lib/time';
 import {
-  fixedWindowOffset,
   formatHour,
   isPast,
   PX_PER_MINUTE,
+  scrollOffsetForTime,
+  REGISTRATION_TAG,
+  registrationStatus,
   ROOM_LABEL_COLORS,
   sessionTypeColor,
   type CalendarBlock,
@@ -13,7 +15,7 @@ import {
   type TimeReference,
 } from './layout';
 
-export const HEADER_HEIGHT = 40; // room label (32) + gap (8)
+const HEADER_HEIGHT = 40; // room label (32) + gap (8)
 const GUTTER_WIDTH = 64;
 const COLUMN_GAP = 12;
 /** Current-time line color (Figma: Lime Green). */
@@ -31,14 +33,14 @@ function Avatars({ speakers }: { speakers: Speaker[] }) {
             key={sp.id}
             src={img.url}
             alt={sp.name}
-            title={sp.name}
+            data-tooltip={sp.name}
             loading="lazy"
             className="size-[24px] rounded-full bg-[#1b2635] object-cover ring-2 ring-ink"
           />
         ) : (
           <span
             key={sp.id}
-            title={sp.name}
+            data-tooltip={sp.name}
             className="flex size-[24px] items-center justify-center rounded-full bg-[#1b2635] text-[10px] text-white ring-2 ring-ink"
           >
             {sp.name
@@ -58,6 +60,25 @@ function Avatars({ speakers }: { speakers: Speaker[] }) {
   );
 }
 
+function RegistrationTag({ count, capacity, className = '' }: { count: number; capacity: number; className?: string }) {
+  const status = REGISTRATION_TAG[registrationStatus({ count, capacity })];
+  return (
+    <span
+      data-tooltip={`${status.label}: ${count} of ${capacity} seats registered`}
+      className={`flex shrink-0 items-center gap-[6px] rounded-[2px] px-[6px] py-[2px] text-[10px] leading-[1.5] font-normal whitespace-nowrap ${className}`}
+      style={{ background: status.background }}
+    >
+      <span className="text-white">{status.label}</span>
+      <span className="text-white/50">
+        {count}/{capacity}
+      </span>
+    </span>
+  );
+}
+
+/** Below this block height there's no room for the tag in the corner, so it sits inline. */
+const CORNER_TAG_MIN_HEIGHT = 52;
+
 function SessionBlock(props: { block: CalendarBlock; dayStart: number; speakers: Speaker[]; past: boolean }) {
   const { block, dayStart, speakers, past } = props;
   const { session, startMin, endMin, lane, lanes } = block;
@@ -67,14 +88,17 @@ function SessionBlock(props: { block: CalendarBlock; dayStart: number; speakers:
   // Mainstage / Social / Breakout get a colored line beside the content.
   const typeColor = sessionTypeColor(session);
   const indicator = typeColor ? 'border-l-2 pl-[8px]' : '';
+  const height = Math.max((endMin - startMin) * PX_PER_MINUTE - 2, 18);
+  const registration = session.registration;
+  const inlineTag = registration && height < CORNER_TAG_MIN_HEIGHT;
 
   return (
     <div
-      title={`${session.title}\n${time}${speakers.length ? `\n${speakers.map((s) => s.name).join(', ')}` : ''}`}
+      data-tooltip={`${session.title}\n${time}${speakers.length ? `\n${speakers.map((s) => s.name).join(', ')}` : ''}`}
       className={`absolute overflow-hidden rounded-[4px] border border-white/15 bg-ink px-[12px] py-[6px] text-white transition-opacity ${past ? 'opacity-50' : ''}`}
       style={{
         top: (startMin - dayStart) * PX_PER_MINUTE,
-        height: Math.max((endMin - startMin) * PX_PER_MINUTE - 2, 18),
+        height,
         left: `calc(${(lane / lanes) * 100}% + ${lane ? 1 : 0}px)`,
         width: `calc(${100 / lanes}% - ${lanes > 1 ? 1 : 0}px)`,
       }}
@@ -84,14 +108,15 @@ function SessionBlock(props: { block: CalendarBlock; dayStart: number; speakers:
           className={`flex items-baseline gap-[8px] text-[14px] leading-[20px] ${indicator}`}
           style={typeColor ? { borderColor: typeColor } : undefined}
         >
-          <span className="min-w-0 truncate" title={session.title}>
+          <span className="min-w-0 truncate" data-tooltip={session.title}>
             {session.title}
           </span>
           <span className="shrink-0 text-[12px] text-white/60">{time}</span>
+          {inlineTag && <RegistrationTag {...registration} className="ml-auto self-center" />}
         </p>
       ) : (
         <div className={`flex flex-col gap-[2px] ${indicator}`} style={typeColor ? { borderColor: typeColor } : undefined}>
-          <p className="truncate text-[14px] leading-[20px]" title={session.title}>
+          <p className="truncate text-[14px] leading-[20px]" data-tooltip={session.title}>
             {session.title}
           </p>
           <p className="truncate text-[12px] leading-[16px] text-white/60">{time}</p>
@@ -102,6 +127,7 @@ function SessionBlock(props: { block: CalendarBlock; dayStart: number; speakers:
           )}
         </div>
       )}
+      {registration && !inlineTag && <RegistrationTag {...registration} className="absolute right-[5px] bottom-[5px]" />}
     </div>
   );
 }
@@ -112,29 +138,21 @@ interface Props {
   speakersFor: (session: Session) => Speaker[];
   /** Live or manual time. Sessions that ended before it are dimmed; the line shows on its day. */
   reference: TimeReference;
-  /**
-   * `scroll`: free scrolling (normal view; starts with the time ~25% down).
-   * `fixed`: no scrolling — all columns fit, and the timeline is shifted so
-   * `anchorMin` sits 25% down `windowHeight` (full-screen view).
-   */
-  mode: { kind: 'scroll' } | { kind: 'fixed'; windowHeight: number; anchorMin: number | null };
-  /** Scroll view only: re-centers on the line whenever this value changes. */
+  /** Re-centers on the time line (about 25% down) whenever this value changes. */
   scrollKey?: string;
 }
 
 /** Room columns with time-proportional session blocks. */
-export function CalendarGrid({ day, calendar, speakersFor, reference, mode, scrollKey }: Props) {
+export function CalendarGrid({ day, calendar, speakersFor, reference, scrollKey }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const fixed = mode.kind === 'fixed';
   const height = (calendar.endMin - calendar.startMin) * PX_PER_MINUTE;
   const hours: number[] = [];
   for (let m = calendar.startMin; m <= calendar.endMin; m += 60) hours.push(m);
 
   const lineMin = reference.day === day ? reference.minutes : null;
   const showLine = lineMin != null && lineMin >= calendar.startMin && lineMin <= calendar.endMin;
-  const offset = fixed ? fixedWindowOffset(mode.anchorMin, calendar.startMin, height, mode.windowHeight) : 0;
 
-  // Scroll view: bring the line about a quarter of the way down when `scrollKey`
+  // Bring the line about a quarter of the way down when `scrollKey`
   // changes (day switch, new manual time) — not every minute, so it never
   // fights someone who is scrolling around.
   const anchorRef = useRef<number | null>(null);
@@ -145,17 +163,17 @@ export function CalendarGrid({ day, calendar, speakersFor, reference, mode, scro
     const el = scrollRef.current;
     const anchor = anchorRef.current;
     if (!el || anchor == null) return;
-    el.scrollTop = fixedWindowOffset(anchor, calendar.startMin, height, el.clientHeight - HEADER_HEIGHT);
+    el.scrollTop = scrollOffsetForTime(anchor, calendar.startMin, height, el.clientHeight - HEADER_HEIGHT);
   }, [scrollKey, calendar.startMin, height]);
 
-  const columnStyle = (wide: boolean): CSSProperties =>
-    fixed
-      ? { flex: wide ? '2 1 0' : '1 1 0', minWidth: 0, marginLeft: COLUMN_GAP }
-      : { flex: wide ? '2 0 400px' : '1 0 200px', marginLeft: COLUMN_GAP };
+  const columnStyle = (wide: boolean): CSSProperties => ({
+    flex: wide ? '2 0 400px' : '1 0 200px',
+    marginLeft: COLUMN_GAP,
+  });
 
   const header = (
-    <div className={`${fixed ? '' : 'sticky top-0'} z-20 flex bg-ink`} style={{ height: HEADER_HEIGHT }}>
-      <div className={`${fixed ? '' : 'sticky left-0'} z-30 shrink-0 bg-ink`} style={{ width: GUTTER_WIDTH }} />
+    <div className="sticky top-0 z-20 flex bg-ink" style={{ height: HEADER_HEIGHT }}>
+      <div className="sticky left-0 z-30 shrink-0 bg-ink" style={{ width: GUTTER_WIDTH }} />
       {calendar.columns.map((col) => (
         <div key={col.room} className="pb-[8px]" style={columnStyle(col.wide)}>
           <div
@@ -170,10 +188,7 @@ export function CalendarGrid({ day, calendar, speakersFor, reference, mode, scro
   );
 
   const body = (
-    <div
-      className={`relative flex ${fixed ? 'transition-transform duration-1000 ease-in-out' : ''}`}
-      style={fixed ? { transform: `translateY(${-offset}px)` } : undefined}
-    >
+    <div className="relative flex">
       {/* Painted first so it shows through the translucent columns but stays behind sessions (as in Figma). */}
       {showLine && (
         <div
@@ -183,7 +198,7 @@ export function CalendarGrid({ day, calendar, speakersFor, reference, mode, scro
         />
       )}
       {/* Time gutter — sticks to the left while scrolling sideways. */}
-      <div className={`${fixed ? '' : 'sticky left-0'} z-10 shrink-0 bg-ink`} style={{ width: GUTTER_WIDTH }}>
+      <div className="sticky left-0 z-10 shrink-0 bg-ink" style={{ width: GUTTER_WIDTH }}>
         <div className="relative" style={{ height }}>
           {hours.map((m) => (
             <span
@@ -224,17 +239,6 @@ export function CalendarGrid({ day, calendar, speakersFor, reference, mode, scro
 
     </div>
   );
-
-  if (fixed) {
-    return (
-      <div className="flex flex-col">
-        {header}
-        <div className="relative overflow-hidden" style={{ height: mode.windowHeight }}>
-          {body}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto overscroll-contain [color-scheme:dark]">

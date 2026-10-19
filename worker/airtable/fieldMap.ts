@@ -25,6 +25,11 @@ export const AIRTABLE = {
        * the Agenda Timeline columns.
        */
       room: 'Location' as string | null,
+      /** Checkbox — whether the session takes registrations. */
+      registration: 'Session Registration',
+      /** Numbers (may be blank). */
+      registrationCount: 'Session Registration Count',
+      registrationCapacity: 'Session Registration Capacity',
     },
   },
   speakers: {

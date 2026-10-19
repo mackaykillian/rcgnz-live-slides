@@ -19,6 +19,7 @@ import { SelectionBar } from './ui/SelectionBar';
 import { Sidebar } from './ui/Sidebar';
 import { SortButton } from './ui/SortButton';
 import { Toast, useToast } from './ui/Toast';
+import { TooltipLayer } from './ui/Tooltip';
 import { ViewHeader, type ViewMode } from './ui/ViewHeader';
 import type { SlideActions } from './ui/types';
 import { DeckView } from './ui/slideshow/DeckView';
@@ -300,6 +301,7 @@ export default function App() {
           onNext={openIndex >= 0 && openIndex < slides.length - 1 ? () => setOpenId(slides[openIndex + 1]!.id) : undefined}
         />
       )}
+      <TooltipLayer />
     </div>
   );
 }

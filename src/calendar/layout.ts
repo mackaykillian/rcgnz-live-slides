@@ -59,6 +59,23 @@ export function sessionTypeColor(session: Session): string | null {
   return match ? SESSION_TYPE_COLORS[types.find((type) => type.toLowerCase() === match)!]! : null;
 }
 
+// ---- Registration availability ---------------------------------------------
+
+export type RegistrationStatus = 'open' | 'low' | 'full';
+
+/** Tag colors from Figma "Session Registration Availability Tag". */
+export const REGISTRATION_TAG = {
+  open: { label: 'Open', background: 'rgb(168 243 155 / 0.25)' },
+  low: { label: 'Low', background: 'rgb(255 234 100 / 0.25)' },
+  full: { label: 'Full', background: 'rgb(248 106 106 / 0.25)' },
+} as const;
+
+/** Full when every seat is taken; Low when under 25% of seats remain; otherwise Open. */
+export function registrationStatus({ count, capacity }: { count: number; capacity: number }): RegistrationStatus {
+  if (count >= capacity) return 'full';
+  return (capacity - count) / capacity < 0.25 ? 'low' : 'open';
+}
+
 /** Vertical scale: pixels per minute (160px per hour). */
 export const PX_PER_MINUTE = 160 / 60;
 
@@ -205,21 +222,17 @@ export function formatMinutes(minutes: number): string {
 }
 
 /**
- * Full-screen agenda: how far (px) to shift the timeline so `anchorMin` sits
- * `fraction` of the way down the visible window, without scrolling past the
- * start or end of the day.
+ * Scroll position (px) that puts `minutes` a `fraction` of the way down a
+ * viewport of `viewHeight`, without scrolling past the start or end of the day.
  */
-export function fixedWindowOffset(
-  anchorMin: number | null,
+export function scrollOffsetForTime(
+  minutes: number | null,
   dayStartMin: number,
   totalHeight: number,
-  windowHeight: number,
+  viewHeight: number,
   fraction = 0.25,
 ): number {
-  if (anchorMin == null) return 0;
-  const target = (anchorMin - dayStartMin) * PX_PER_MINUTE - windowHeight * fraction;
-  return Math.max(0, Math.min(target, Math.max(0, totalHeight - windowHeight)));
+  if (minutes == null) return 0;
+  const target = (minutes - dayStartMin) * PX_PER_MINUTE - viewHeight * fraction;
+  return Math.max(0, Math.min(target, Math.max(0, totalHeight - viewHeight)));
 }
-
-/** Round down to the last 15-minute mark — the full-screen view repositions on these. */
-export const snapTo15 = (minutes: number) => Math.floor(minutes / 15) * 15;

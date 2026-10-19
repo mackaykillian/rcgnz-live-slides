@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AirtableRecord } from './client';
 import { AIRTABLE } from './fieldMap';
-import { asText, asTextList, eventFormula, normalize } from './normalize';
+import { asText, asTextList, eventFormula, normalize, toRegistration } from './normalize';
 
 const rec = (id: string, fields: Record<string, unknown>): AirtableRecord => ({ id, createdTime: '', fields });
 const S = AIRTABLE.sessions.fields;
@@ -61,5 +61,18 @@ describe('normalize', () => {
 
   it('only keeps speakers used by this event', () => {
     expect(Object.keys(out.speakers)).toEqual(['recP1']);
+  });
+});
+
+describe('toRegistration', () => {
+  it('needs registration on and a positive capacity', () => {
+    expect(toRegistration(true, 2, 20)).toEqual({ count: 2, capacity: 20 });
+    expect(toRegistration(false, 2, 20)).toBeNull();
+    expect(toRegistration(true, 2, undefined)).toBeNull();
+    expect(toRegistration(true, 2, 0)).toBeNull();
+  });
+
+  it('treats a blank count as 0', () => {
+    expect(toRegistration(true, undefined, 56)).toEqual({ count: 0, capacity: 56 });
   });
 });
