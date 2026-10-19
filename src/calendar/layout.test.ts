@@ -11,6 +11,7 @@ import {
   NO_ROOM,
   PX_PER_MINUTE,
   sessionTypeColor,
+  sessionsWithoutLocation,
   snapTo15,
   timeOptions,
   timeReference,
@@ -76,7 +77,7 @@ describe('buildCalendarDay', () => {
 
   it('keeps the configured room order and hides "Awardco HQ" and "No room"', () => {
     const rooms = day.columns.map((c) => c.room);
-    expect(rooms.slice(0, 2)).toEqual(['Grand Ballroom', 'Empire East']);
+    expect(rooms.slice(0, 4)).toEqual(['Empire West', 'Empire East', 'Empire Lounge', 'Grand Ballroom']);
     expect(rooms).not.toContain('Awardco HQ');
     expect(rooms).not.toContain(NO_ROOM);
     expect(day.columns.find((c) => c.room === 'Grand Ballroom')!.wide).toBe(true);
@@ -140,5 +141,21 @@ describe('current time indicator', () => {
     expect(fixedWindowOffset(8 * 60, 8 * 60, total, win)).toBe(0); // can't go above the day start
     expect(fixedWindowOffset(18 * 60, 8 * 60, total, win)).toBe(total - win); // or past the end
     expect(fixedWindowOffset(null, 8 * 60, total, win)).toBe(0);
+  });
+});
+
+describe('sessionsWithoutLocation', () => {
+  it('lists sessions with no location, earliest first', () => {
+    const list = sessionsWithoutLocation([
+      session('late', null, '15:00', '15:15'),
+      session('placed', 'Gallery I', '9:00', '10:00'),
+      session('early', null, '10:15', '10:30'),
+    ]);
+    expect(list.map((s) => s.id)).toEqual(['early', 'late']);
+  });
+
+  it('hides Montage Entrance from the timeline', () => {
+    const day = buildCalendarDay([session('shuttle', 'Montage Entrance', '15:45', '16:00')], '2026-11-10');
+    expect(day.columns.map((c) => c.room)).not.toContain('Montage Entrance');
   });
 });

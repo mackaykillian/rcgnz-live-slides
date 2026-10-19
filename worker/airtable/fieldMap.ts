@@ -19,8 +19,12 @@ export const AIRTABLE = {
       speakers: 'Speakers Ref',
       /** Single select — matched against EVENT_NAME. */
       event: 'Event Name',
-      /** Single select. */
-      room: 'Room' as string | null,
+      /**
+       * Where the session is held. Synced from Bizzabo ("Location"); this replaced
+       * the hand-entered "Room" select. Drives room filters, slideshow decks and
+       * the Agenda Timeline columns.
+       */
+      room: 'Location' as string | null,
     },
   },
   speakers: {

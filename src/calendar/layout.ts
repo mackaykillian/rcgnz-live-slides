@@ -4,23 +4,43 @@ import { eventDayKey } from '../lib/time';
 
 /** Rooms in column order. Any other room with sessions that day follows, alphabetically. */
 export const CALENDAR_ROOMS = [
-  'Grand Ballroom',
-  'Empire East',
   'Empire West',
+  'Empire East',
+  'Empire Lounge',
+  'Grand Ballroom',
+  'Grand Promenade',
   'Gallery I',
   'Gallery II',
-  'Grand Promenade',
-  'Empire Lounge',
+  'Fitness Studio',
+  'Vista Lounge',
 ];
 
-/** The event's mainstage — its column is 50% wider. */
+/** Room label background colors on the timeline; unlisted rooms keep the default white 10%. */
+export const ROOM_LABEL_COLORS: Record<string, string> = {
+  'Empire West': 'rgb(252 131 94 / 0.15)', // #FC835E 15%
+  'Empire East': 'rgb(252 131 94 / 0.15)',
+  'Empire Lounge': 'rgb(252 131 94 / 0.15)',
+  'Grand Ballroom': 'rgb(37 108 250 / 0.15)', // #256CFA 15%
+  'Grand Promenade': 'rgb(37 108 250 / 0.15)',
+  'Gallery I': 'rgb(168 243 155 / 0.25)', // #A8F39B 25%
+  'Gallery II': 'rgb(168 243 155 / 0.25)',
+};
+
+/** The event's mainstage — its column is twice as wide as the others. */
 export const MAINSTAGE_ROOM = 'Grand Ballroom';
 
 /** Column label for sessions without a room in Airtable. */
 export const NO_ROOM = 'No room';
 
 /** Rooms not shown on the timeline. Their sessions keep their room in the data; they just aren't displayed. */
-export const HIDDEN_CALENDAR_ROOMS = ['Awardco HQ', NO_ROOM];
+export const HIDDEN_CALENDAR_ROOMS = ['Awardco HQ', 'Montage Entrance', NO_ROOM];
+
+/** Sessions with no location in Airtable, in start order — flagged above the timeline. */
+export function sessionsWithoutLocation(sessions: Session[]): Session[] {
+  return sessions
+    .filter((s) => !s.room)
+    .sort((a, b) => (a.start ?? '\uffff').localeCompare(b.start ?? '\uffff') || a.title.localeCompare(b.title));
+}
 
 /** Whether a session appears on the timeline. */
 export const isShownInCalendar = (session: Session) => !HIDDEN_CALENDAR_ROOMS.includes(session.room ?? NO_ROOM);

@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowsOut, CaretUpDown, Play } from '@phosphor-icons/react';
+import { ArrowsOut, CaretUpDown, Play, Warning } from '@phosphor-icons/react';
 import type { Session, Speaker, Snapshot } from '../../shared/types';
 import { EVENT_DAYS } from '../config';
-import { eventDayKey } from '../lib/time';
+import { eventDayKey, formatDay, formatTime } from '../lib/time';
 import { AgendaPresenter } from './AgendaPresenter';
 import { CalendarGrid } from './CalendarGrid';
 import {
   buildCalendarDay,
   formatMinutes,
   isShownInCalendar,
+  sessionsWithoutLocation,
   snapTo15,
   timeOptions,
   timeReference,
@@ -52,6 +53,8 @@ export function CalendarView({ snapshot, day, onDay }: Props) {
   const speakersFor = (session: Session) =>
     session.speakerIds.map((id) => snapshot.speakers[id]).filter((s): s is Speaker => !!s);
   const hasSessions = calendar.columns.some((c) => c.blocks.length);
+  // These are hidden from the timeline, so call them out until they get a location.
+  const unlocated = useMemo(() => sessionsWithoutLocation(snapshot.sessions), [snapshot]);
 
   // Full screen holds the time 25% down; in live mode it repositions every 15 minutes.
   const anchorMin = reference.day === selected ? (live ? snapTo15(reference.minutes) : reference.minutes) : null;
@@ -157,6 +160,33 @@ export function CalendarView({ snapshot, day, onDay }: Props) {
           </button>
         </div>
       </div>
+
+      {unlocated.length > 0 && (
+        <div
+          role="status"
+          className="flex shrink-0 items-start gap-[8px] rounded-[8px] border border-[#fbbf24]/30 bg-[#fbbf24]/10 px-[12px] py-[8px] text-[12px] leading-[1.5] text-[#fde68a]"
+        >
+          <Warning size={16} weight="fill" className="mt-[1px] shrink-0 text-[#fbbf24]" />
+          <p className="min-w-0 [overflow-wrap:anywhere]">
+            <span className="text-white">
+              {unlocated.length} session{unlocated.length === 1 ? ' has' : 's have'} no location in Airtable and{' '}
+              {unlocated.length === 1 ? 'is' : 'are'} hidden:
+            </span>{' '}
+            {unlocated.map((s, i) => (
+              <span key={s.id}>
+                {i > 0 && ', '}
+                {s.title}
+                {s.start && (
+                  <span className="text-[#fde68a]/70">
+                    {' '}
+                    ({formatDay(s.start)}, {formatTime(s.start)})
+                  </span>
+                )}
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
 
       {!hasSessions ? (
         <p className="flex flex-1 items-center justify-center text-[14px] text-white/60">No sessions on this day.</p>

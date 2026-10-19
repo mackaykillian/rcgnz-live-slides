@@ -65,6 +65,9 @@ Browser ◀── /api/images/:id ◀── KV cache ◀── Airtable attachme
 - **Headshots**. Speakers alternate Sunset, Aqua, Sunset… If the Sunset/Aqua
   image is missing, the transparent cut-out is placed over the matching themed
   background (`src/assets/slides/headshot-bg-*.png`).
+- **Rooms** come from the Sessions table's **Location** field, which is synced
+  from Bizzabo. It replaced the hand-entered "Room" select. Room names must
+  match the names used in `src/slideshows/decks.ts` and `src/calendar/layout.ts`.
 - **Slideshows** ([`src/slideshows`](src/slideshows)). Each room's deck is an
   ordered array of entries `{ key, slideId }`, built in two steps:
   1. A **ruleset** (`roomRuleset`) takes the room's sessions in start-time
@@ -87,9 +90,12 @@ Browser ◀── /api/images/:id ◀── KV cache ◀── Airtable attachme
     avatars.
   - Overlapping sessions in a room sit side by side.
   - Day tabs switch between Nov 9–11 (`#/calendar/2026-11-10`).
-  - Column order, the wider mainstage (`MAINSTAGE_ROOM`, Grand Ballroom) and the
+  - Column order, room label colors (`ROOM_LABEL_COLORS`), the double-width
+    mainstage (`MAINSTAGE_ROOM`, Grand Ballroom) and the
     scale are set in `src/calendar/layout.ts`.
-  - Sessions without a room go in a "No room" column.
+  - Awardco HQ, Montage Entrance and sessions without a location are hidden
+    (`HIDDEN_CALENDAR_ROOMS`). A warning above the timeline lists any sessions
+    missing a location.
   - **Current time:** a green line marks it, and sessions that have ended are
     dimmed to 50%. **Live** follows the clock; picking a time in the
     15-minute picker pins it instead (manual mode, applies to the day shown).

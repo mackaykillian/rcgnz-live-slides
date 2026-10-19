@@ -49,6 +49,16 @@ describe('normalize', () => {
     expect(out.imageSources).toEqual({ attT: 'https://airtable/t.png', attS: 'https://airtable/s.png' });
   });
 
+  it('reads the room from the Location field', () => {
+    expect(S.room).toBe('Location');
+    const located = normalize({
+      sessions: [rec('recL', { [S.title]: 'Keynote', [S.room!]: '  Grand Ballroom\n' }), rec('recN', { [S.title]: 'Break' })],
+      speakers: [],
+      headshots: [],
+    });
+    expect(located.sessions.map((x) => x.room)).toEqual(['Grand Ballroom', null]);
+  });
+
   it('only keeps speakers used by this event', () => {
     expect(Object.keys(out.speakers)).toEqual(['recP1']);
   });

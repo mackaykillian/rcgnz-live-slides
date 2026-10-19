@@ -6,6 +6,7 @@ import {
   formatHour,
   isPast,
   PX_PER_MINUTE,
+  ROOM_LABEL_COLORS,
   sessionTypeColor,
   type CalendarBlock,
   type CalendarDay,
@@ -83,12 +84,16 @@ function SessionBlock(props: { block: CalendarBlock; dayStart: number; speakers:
           className={`flex items-baseline gap-[8px] text-[14px] leading-[20px] ${indicator}`}
           style={typeColor ? { borderColor: typeColor } : undefined}
         >
-          <span className="min-w-0 truncate">{session.title}</span>
+          <span className="min-w-0 truncate" title={session.title}>
+            {session.title}
+          </span>
           <span className="shrink-0 text-[12px] text-white/60">{time}</span>
         </p>
       ) : (
         <div className={`flex flex-col gap-[2px] ${indicator}`} style={typeColor ? { borderColor: typeColor } : undefined}>
-          <p className="truncate text-[14px] leading-[20px]">{session.title}</p>
+          <p className="truncate text-[14px] leading-[20px]" title={session.title}>
+            {session.title}
+          </p>
           <p className="truncate text-[12px] leading-[16px] text-white/60">{time}</p>
           {speakers.length > 0 && (
             <div className="pt-[4px]">
@@ -145,15 +150,18 @@ export function CalendarGrid({ day, calendar, speakersFor, reference, mode, scro
 
   const columnStyle = (wide: boolean): CSSProperties =>
     fixed
-      ? { flex: wide ? '1.5 1 0' : '1 1 0', minWidth: 0, marginLeft: COLUMN_GAP }
-      : { flex: wide ? '1.5 0 300px' : '1 0 200px', marginLeft: COLUMN_GAP };
+      ? { flex: wide ? '2 1 0' : '1 1 0', minWidth: 0, marginLeft: COLUMN_GAP }
+      : { flex: wide ? '2 0 400px' : '1 0 200px', marginLeft: COLUMN_GAP };
 
   const header = (
     <div className={`${fixed ? '' : 'sticky top-0'} z-20 flex bg-ink`} style={{ height: HEADER_HEIGHT }}>
       <div className={`${fixed ? '' : 'sticky left-0'} z-30 shrink-0 bg-ink`} style={{ width: GUTTER_WIDTH }} />
       {calendar.columns.map((col) => (
         <div key={col.room} className="pb-[8px]" style={columnStyle(col.wide)}>
-          <div className="flex h-[32px] items-center justify-center truncate rounded-[4px] bg-white/10 px-[8px] text-[14px] text-white">
+          <div
+            className="flex h-[32px] items-center justify-center truncate rounded-[4px] bg-white/10 px-[8px] text-[14px] text-white"
+            style={ROOM_LABEL_COLORS[col.room] ? { background: ROOM_LABEL_COLORS[col.room] } : undefined}
+          >
             {col.room}
           </div>
         </div>
