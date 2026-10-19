@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { AdminAuthError, clearAdminPasscode, fetchBizzabo, getAdminPasscode, setAdminPasscode } from './data/admin';
 import { useSnapshot } from './data/useSnapshot';
+import { CalendarView } from './calendar/CalendarView';
 import { copySlide, downloadSlide, downloadSlides } from './export/exportSlides';
 import { DEFAULT_SORT, filterAndSortSlides, type SlideQuery, type SortKey } from './lib/filterSlides';
 import { useLocalStorage } from './lib/useLocalStorage';
@@ -161,7 +162,9 @@ export default function App() {
   const openIndex = openItem ? slides.findIndex((s) => s.id === openItem.id) : -1;
 
   const crumbs =
-    route.section === 'slideshow'
+    route.section === 'calendar'
+      ? ['Agenda Timeline View']
+      : route.section === 'slideshow'
       ? activeDeck
         ? ['Slideshow', activeDeck.definition.name]
         : ['All Slideshows']
@@ -170,7 +173,7 @@ export default function App() {
         : ['All Slides'];
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-x-clip">
       {!sidebarCollapsed && (
         <Sidebar
           route={route}
@@ -198,10 +201,26 @@ export default function App() {
 
         <section
           className={`min-h-0 flex-1 rounded-[8px] p-[32px] ${
-            route.section === 'slideshow' ? (activeDeck ? 'bg-[#1b2635]' : 'overflow-y-auto bg-ink') : 'overflow-y-auto bg-white'
+            route.section === 'calendar'
+              ? 'bg-ink'
+              : route.section === 'slideshow'
+                ? activeDeck
+                  ? 'bg-[#1b2635]'
+                  : 'overflow-y-auto bg-ink'
+                : 'overflow-y-auto bg-white'
           }`}
         >
-          {route.section === 'slideshow' ? (
+          {route.section === 'calendar' ? (
+            snapshot ? (
+              <CalendarView
+                snapshot={snapshot}
+                day={route.day}
+                onDay={(day) => navigate({ section: 'calendar', day }, { replace: true })}
+              />
+            ) : (
+              <p className="py-[48px] text-center text-[14px] text-white/60">Loading sessions…</p>
+            )
+          ) : route.section === 'slideshow' ? (
             loading ? (
               <p className="py-[48px] text-center text-[14px] text-white/60">Loading slideshows…</p>
             ) : activeDeck ? (
@@ -224,7 +243,7 @@ export default function App() {
               />
 
               {error && (
-                <p className="rounded-[8px] bg-[#fc835e]/15 px-[12px] py-[8px] text-[14px] text-[#b4441f]">{error}</p>
+                <p className="rounded-[8px] bg-[#fc835e]/15 px-[12px] py-[8px] text-[14px] [overflow-wrap:anywhere] text-[#b4441f]">{error}</p>
               )}
 
               {viewMode === 'gallery' && (

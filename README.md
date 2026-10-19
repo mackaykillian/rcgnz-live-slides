@@ -81,6 +81,21 @@ Browser ◀── /api/images/:id ◀── KV cache ◀── Airtable attachme
   Present with **Enter fullscreen**:
   - ← / → (plus Space, PageUp/PageDown, Home/End) to move between slides
   - **Esc** or the top-right **Exit fullscreen** button to leave
+- **Agenda Timeline View** ([`src/calendar`](src/calendar)) is a Google
+  Calendar–style day view with one column per room, in event time:
+  - Blocks are sized by start/end time and show the title, the time and speaker
+    avatars.
+  - Overlapping sessions in a room sit side by side.
+  - Day tabs switch between Nov 9–11 (`#/calendar/2026-11-10`).
+  - Column order, the wider mainstage (`MAINSTAGE_ROOM`, Grand Ballroom) and the
+    scale are set in `src/calendar/layout.ts`.
+  - Sessions without a room go in a "No room" column.
+  - **Current time:** a green line marks it, and sessions that have ended are
+    dimmed to 50%. **Live** follows the clock; picking a time in the
+    15-minute picker pins it instead (manual mode, applies to the day shown).
+  - **Fullscreen** shows a 16:9 display view with all rooms and no scrolling.
+    The time sits 25% from the top, and in Live mode the view repositions every
+    15 minutes. Press Esc to exit.
 - **File names**. `MMDDYYYY_HHmm_SessionTitle_Template.png`, in event time
   (America/Denver). Batch downloads come as a zip.
 

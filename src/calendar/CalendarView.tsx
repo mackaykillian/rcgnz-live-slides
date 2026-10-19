@@ -1,0 +1,188 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowsOut, CaretUpDown, Play } from '@phosphor-icons/react';
+import type { Session, Speaker, Snapshot } from '../../shared/types';
+import { EVENT_DAYS } from '../config';
+import { eventDayKey } from '../lib/time';
+import { AgendaPresenter } from './AgendaPresenter';
+import { CalendarGrid } from './CalendarGrid';
+import {
+  buildCalendarDay,
+  formatMinutes,
+  isShownInCalendar,
+  snapTo15,
+  timeOptions,
+  timeReference,
+  type TimeMode,
+} from './layout';
+import { useNow } from './useNow';
+
+const dayTabLabel = (day: string) =>
+  new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' }).format(
+    new Date(`${day}T12:00:00Z`),
+  );
+
+const focusRing = 'focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none';
+
+interface Props {
+  snapshot: Snapshot;
+  day: string | null;
+  onDay: (day: string) => void;
+}
+
+/** Google Calendar–style day view: one column per room, blocks sized by session length. */
+export function CalendarView({ snapshot, day, onDay }: Props) {
+  const now = useNow();
+  const todayKey = eventDayKey(now.toISOString());
+  const selected = day && EVENT_DAYS.includes(day) ? day : EVENT_DAYS.includes(todayKey) ? todayKey : EVENT_DAYS[0]!;
+
+  const [timeMode, setTimeMode] = useState<TimeMode>({ kind: 'live' });
+  const [presenting, setPresenting] = useState(false);
+  const live = timeMode.kind === 'live';
+  const reference = timeReference(timeMode, now, selected);
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const s of snapshot.sessions) {
+      if (s.start && isShownInCalendar(s)) c[eventDayKey(s.start)] = (c[eventDayKey(s.start)] ?? 0) + 1;
+    }
+    return c;
+  }, [snapshot]);
+
+  const calendar = useMemo(() => buildCalendarDay(snapshot.sessions, selected), [snapshot, selected]);
+  const speakersFor = (session: Session) =>
+    session.speakerIds.map((id) => snapshot.speakers[id]).filter((s): s is Speaker => !!s);
+  const hasSessions = calendar.columns.some((c) => c.blocks.length);
+
+  // Full screen holds the time 25% down; in live mode it repositions every 15 minutes.
+  const anchorMin = reference.day === selected ? (live ? snapTo15(reference.minutes) : reference.minutes) : null;
+
+  // Leaving browser fullscreen (Esc, or the browser's own UI) ends the presentation.
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setPresenting(false);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  // Browsers without the Fullscreen API still get the overlay; Esc closes it.
+  useEffect(() => {
+    if (!presenting || document.fullscreenElement) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setPresenting(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [presenting]);
+
+  const enterFullscreen = () => {
+    setPresenting(true);
+    // Must run inside the click handler — browsers only allow fullscreen from a user gesture.
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  };
+  const exitFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else setPresenting(false);
+  };
+
+  return (
+    <div className="flex h-full flex-col gap-[16px]">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-[16px]">
+        <div role="tablist" aria-label="Event day" className="flex gap-[4px]">
+          {EVENT_DAYS.map((d) => {
+            const active = d === selected;
+            return (
+              <button
+                key={d}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => onDay(d)}
+                className={`rounded-[6px] px-[12px] py-[6px] text-[14px] leading-[20px] ${focusRing} ${
+                  active ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                {dayTabLabel(d)}
+                <span className="ml-[6px] text-[12px] text-white/40">{counts[d] ?? 0}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-[16px]">
+          {/* Time: pick a 15-minute slot (manual) or follow the clock (Live). */}
+          <div className="flex items-center">
+            <label
+              className={`relative flex items-center gap-[6px] rounded-l-[8px] border-r border-white/10 bg-white/10 px-[12px] py-[8px] text-[14px] leading-[1.5] focus-within:ring-2 focus-within:ring-accent ${
+                live ? 'text-[#858c93]' : 'text-white'
+              }`}
+            >
+              {formatMinutes(live ? reference.minutes : timeMode.minutes)}
+              <CaretUpDown size={16} />
+              <select
+                aria-label="Show the agenda at a specific time"
+                value={live ? '' : String(timeMode.minutes)}
+                onChange={(e) => e.target.value && setTimeMode({ kind: 'manual', minutes: Number(e.target.value) })}
+                className="absolute inset-0 cursor-pointer opacity-0"
+              >
+                <option value="" disabled>
+                  Live
+                </option>
+                {timeOptions(calendar.startMin, calendar.endMin).map((m) => (
+                  <option key={m} value={m}>
+                    {formatMinutes(m)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={() => setTimeMode({ kind: 'live' })}
+              aria-pressed={live}
+              className={`flex items-center gap-[6px] rounded-r-[8px] px-[12px] py-[8px] text-[14px] leading-[1.5] text-white ${focusRing} ${
+                live ? 'bg-accent' : 'bg-white/10 hover:bg-white/15'
+              }`}
+            >
+              <Play size={16} weight={live ? 'fill' : 'regular'} />
+              Live
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={enterFullscreen}
+            disabled={!hasSessions}
+            className={`flex items-center gap-[6px] rounded-[8px] bg-white/10 px-[12px] py-[8px] text-[14px] leading-[1.5] text-white hover:bg-white/15 disabled:opacity-50 ${focusRing}`}
+          >
+            <ArrowsOut size={16} />
+            Fullscreen
+          </button>
+        </div>
+      </div>
+
+      {!hasSessions ? (
+        <p className="flex flex-1 items-center justify-center text-[14px] text-white/60">No sessions on this day.</p>
+      ) : (
+        <CalendarGrid
+          day={selected}
+          calendar={calendar}
+          speakersFor={speakersFor}
+          reference={reference}
+          mode={{ kind: 'scroll' }}
+          scrollKey={`${selected}|${live ? 'live' : timeMode.minutes}`}
+        />
+      )}
+
+      {presenting && (
+        <AgendaPresenter
+          day={selected}
+          dayLabel={dayTabLabel(selected)}
+          calendar={calendar}
+          speakersFor={speakersFor}
+          reference={reference}
+          live={live}
+          anchorMin={anchorMin}
+          onExit={exitFullscreen}
+        />
+      )}
+    </div>
+  );
+}

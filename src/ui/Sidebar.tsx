@@ -3,6 +3,7 @@ import {
   ArrowsClockwise,
   ArrowUpRight,
   CaretDown,
+  CalendarBlank,
   CaretRight,
   Cloud,
   FigmaLogo,
@@ -111,6 +112,7 @@ export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse, 
 
   const inSlides = route.section === 'slides';
   const inShow = route.section === 'slideshow';
+  const inCalendar = route.section === 'calendar';
   const slidesHighlight: Highlight = inSlides ? (route.template ? 'neutral' : 'accent') : 'none';
   const showHighlight: Highlight = inShow ? (route.deck ? 'neutral' : 'accent') : 'none';
 
@@ -126,7 +128,7 @@ export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse, 
         </button>
       </div>
 
-      <div className="mt-[24px] flex flex-1 flex-col justify-between overflow-y-auto">
+      <div className="mt-[24px] flex flex-1 flex-col justify-between overflow-y-auto [scrollbar-width:thin]">
         <div className="flex flex-col gap-[24px]">
           <div className="flex flex-col gap-[8px]">
             <button
@@ -186,6 +188,15 @@ export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse, 
                   />
                 ))}
             </div>
+
+            <a
+              href={routeHref({ section: 'calendar', day: null })}
+              aria-current={inCalendar ? 'page' : undefined}
+              className={`flex w-full items-center gap-[6px] rounded-[6px] px-[8px] py-[7px] text-[14px] leading-[18px] ${focusRing} ${highlightClass[inCalendar ? 'accent' : 'none']}`}
+            >
+              <CalendarBlank size={16} className="shrink-0" />
+              <span className="truncate">Agenda Timeline View</span>
+            </a>
 
             <div className="flex flex-col">
               <ExternalItem href={LINKS.airtable} icon={<Table size={16} />} label="Airtable base" />

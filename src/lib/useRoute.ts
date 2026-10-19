@@ -5,13 +5,16 @@ import { isTemplateId, type TemplateId } from '../slides/templates';
  * Hash routes so views are linkable:
  *   #/slides, #/slides/standard
  *   #/slideshow, #/slideshow/grand-ballroom, #/slideshow/grand-ballroom/<entry key>
+ *   #/calendar, #/calendar/2026-11-10
  */
 export type Route =
   | { section: 'slides'; template: TemplateId | null }
-  | { section: 'slideshow'; deck: string | null; slide: string | null };
+  | { section: 'slideshow'; deck: string | null; slide: string | null }
+  | { section: 'calendar'; day: string | null };
 
 export function parseRoute(hash: string): Route {
   const [section, deck, ...rest] = hash.replace(/^#\/?/, '').split('/');
+  if (section === 'calendar') return { section, day: deck && /^\d{4}-\d{2}-\d{2}$/.test(deck) ? deck : null };
   if (section === 'slideshow') {
     const slide = rest.join('/');
     return { section, deck: deck ? decodeURIComponent(deck) : null, slide: slide ? decodeURIComponent(slide) : null };
@@ -20,6 +23,7 @@ export function parseRoute(hash: string): Route {
 }
 
 export function routeHref(route: Route): string {
+  if (route.section === 'calendar') return route.day ? `#/calendar/${route.day}` : '#/calendar';
   if (route.section === 'slideshow') {
     if (!route.deck) return '#/slideshow';
     const base = `#/slideshow/${encodeURIComponent(route.deck)}`;

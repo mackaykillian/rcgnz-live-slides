@@ -27,12 +27,12 @@ export function Toast({ toast }: { toast: ToastState | null }) {
   return (
     <div
       role="status"
-      className="pointer-events-auto flex items-center gap-[8px] rounded-[12px] bg-ink px-[16px] py-[10px] text-[12px] leading-[1.5] text-white shadow-[0_8px_24px_rgba(2,14,30,0.25)]"
+      className="pointer-events-auto flex max-w-[min(560px,calc(100%-32px))] items-center gap-[8px] rounded-[12px] bg-ink px-[16px] py-[10px] text-[12px] leading-[1.5] [overflow-wrap:anywhere] text-white shadow-[0_8px_24px_rgba(2,14,30,0.25)]"
     >
       <Icon
         size={16}
         weight={toast.kind === 'busy' ? 'bold' : 'fill'}
-        className={toast.kind === 'busy' ? 'animate-spin' : toast.kind === 'success' ? 'text-[#a8f39b]' : 'text-[#fc835e]'}
+        className={`shrink-0 ${toast.kind === 'busy' ? 'animate-spin' : toast.kind === 'success' ? 'text-[#a8f39b]' : 'text-[#fc835e]'}`}
       />
       {toast.message}
     </div>
