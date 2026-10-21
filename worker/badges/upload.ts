@@ -37,12 +37,18 @@ interface UploadResponse {
   fields: Record<string, AirtableAttachment[]>;
 }
 
-/** Upload a PNG into an attachment field (appends). Returns the new attachment's id. */
-async function uploadPng(env: Env, recordId: string, field: string, filename: string, png: Uint8Array): Promise<string> {
+export interface BadgeFile {
+  name: string;
+  contentType: 'application/pdf' | 'image/png';
+  bytes: Uint8Array;
+}
+
+/** Upload a file into an attachment field (appends). Returns the new attachment's id. */
+async function uploadFile(env: Env, recordId: string, field: string, file: BadgeFile): Promise<string> {
   const url = `https://content.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${recordId}/${encodeURIComponent(field)}/uploadAttachment`;
   const body = (await airtableRequest(env, url, {
     method: 'POST',
-    body: JSON.stringify({ contentType: 'image/png', filename, file: toBase64(png) }),
+    body: JSON.stringify({ contentType: file.contentType, filename: file.name, file: toBase64(file.bytes) }),
   })) as UploadResponse;
   // The response lists the field's attachments (keyed by field id); the upload is appended last.
   const attachments = Object.values(body.fields)[0] ?? [];
@@ -58,10 +64,10 @@ async function uploadPng(env: Env, recordId: string, field: string, filename: st
 export async function writeBadge(
   env: Env,
   recordId: string,
-  files: { badge: { name: string; png: Uint8Array }; qr: { name: string; png: Uint8Array } },
+  files: { badge: BadgeFile; qr: BadgeFile },
 ): Promise<void> {
-  const badgeId = await uploadPng(env, recordId, R.fields.badge, files.badge.name, files.badge.png);
-  const qrId = await uploadPng(env, recordId, R.fields.qrCode, files.qr.name, files.qr.png);
+  const badgeId = await uploadFile(env, recordId, R.fields.badge, files.badge);
+  const qrId = await uploadFile(env, recordId, R.fields.qrCode, files.qr);
   await airtableRequest(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${R.table}/${recordId}`, {
     method: 'PATCH',
     body: JSON.stringify({ fields: { [R.fields.badge]: [{ id: badgeId }], [R.fields.qrCode]: [{ id: qrId }] } }),

@@ -14,6 +14,7 @@ const R = AIRTABLE.registrations;
 export interface RegistrationRow {
   recordId: string;
   registrationId: number | null;
+  batch: string | null;
   data: BadgeData | null;
   invalidReason?: string;
   hasBadge: boolean;
@@ -36,6 +37,7 @@ export function toRegistrationRow(rec: AirtableRecord): RegistrationRow {
   return {
     recordId: rec.id,
     registrationId: asNumber(f[R.fields.registrationId]),
+    batch: asText(f[R.fields.batch]),
     data:
       invalidReason || !isBadgeType(type) || !qrLink
         ? null
@@ -84,11 +86,18 @@ export async function badgeStatus(
 
 const REGISTRATION_FIELDS = Object.values(R.fields);
 
-/** All registrations, or just `recordIds`. */
-export async function readRegistrations(env: Env, recordIds?: string[]): Promise<RegistrationRow[]> {
-  const filterByFormula = recordIds?.length
-    ? `OR(${recordIds.map((id) => `RECORD_ID()='${id.replace(/[^\w]/g, '')}'`).join(',')})`
-    : undefined;
+const quote = (value: string) => `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+
+/** All registrations, just `recordIds`, or one batch. */
+export async function readRegistrations(
+  env: Env,
+  only?: string[] | { batch: string },
+): Promise<RegistrationRow[]> {
+  const filterByFormula = Array.isArray(only)
+    ? `OR(${only.map((id) => `RECORD_ID()=${quote(id)}`).join(',')})`
+    : only
+      ? `{${R.fields.batch}}=${quote(only.batch)}`
+      : undefined;
   const records = await listAllRecords(env.AIRTABLE_TOKEN, env.AIRTABLE_BASE_ID, R.table, {
     fields: REGISTRATION_FIELDS,
     filterByFormula,
@@ -102,6 +111,7 @@ export async function listBadgeRegistrations(env: Env): Promise<BadgeRegistratio
     rows.map(async (row) => ({
       recordId: row.recordId,
       registrationId: row.registrationId,
+      batch: row.batch,
       data: row.data,
       ...(await badgeStatus(row, fingerprints)),
     })),

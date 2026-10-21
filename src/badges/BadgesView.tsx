@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowsClockwise, CardsThree, FilePng, MagnifyingGlass, Warning, X } from '@phosphor-icons/react';
-import { BADGE_TYPES, type BadgeRegistration, type BadgeStatus } from '../../shared/badges';
-import { AdminAuthError, fetchBadges, generateBadges, previewBadgePng } from '../data/admin';
+import { ArrowsClockwise, CardsThree, DownloadSimple, FilePdf, MagnifyingGlass, Stack, Warning, X } from '@phosphor-icons/react';
+import { BADGE_TYPES, MAX_BADGES_PER_BATCH, type BadgeRegistration, type BadgeStatus } from '../../shared/badges';
+import { AdminAuthError, downloadBatchPdf, fetchBadges, generateBadges, previewBadgePdf } from '../data/admin';
 import { Dropdown } from '../ui/Filters';
 import type { ToastKind } from '../ui/Toast';
 import { BadgeCard } from './BadgeCard';
@@ -23,6 +23,18 @@ const STATUS_CHIP: Record<BadgeStatus, { label: string; background: string }> = 
 };
 
 const focusRing = 'outline-none focus-visible:ring-2 focus-visible:ring-accent';
+
+/** Batch filter value for registrations without a Batch in Airtable. */
+const NO_BATCH = '__none';
+
+function saveBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
 
 const fullName = (r: BadgeRegistration) => (r.data ? `${r.data.firstName} ${r.data.lastName}`.trim() : `Registration ${r.registrationId ?? r.recordId}`);
 
@@ -48,6 +60,8 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
 
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
+  const [batch, setBatch] = useState('');
+  const [downloading, setDownloading] = useState(false);
   const [status, setStatus] = useState<BadgeStatus | 'all'>('all');
 
   const handleError = useCallback(
@@ -127,9 +141,9 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
     if (!passcode) return;
     // Open the tab inside the click so it isn't blocked as a popup.
     const tab = window.open('', '_blank');
-    notify('busy', 'Rendering print PNG…');
+    notify('busy', 'Rendering print PDF…');
     try {
-      const url = URL.createObjectURL(await previewBadgePng(passcode, r.recordId));
+      const url = URL.createObjectURL(await previewBadgePdf(passcode, r.recordId));
       if (tab) tab.location.href = url;
       else window.location.href = url;
       notify('success', 'Preview opened — not uploaded');
@@ -138,6 +152,28 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
       handleError(err);
     }
   };
+
+  const downloadBatch = async (name: string, count: number) => {
+    if (!passcode) return;
+    setDownloading(true);
+    notify('busy', `Rendering batch ${name} — ${count} badge${count === 1 ? '' : 's'}…`);
+    try {
+      saveBlob(await downloadBatchPdf(passcode, name), `RCGNZ-Badges_${name}_${count}.pdf`);
+      notify('success', `Downloaded batch ${name}`);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  /** Printable badges per Batch (registrations with problems aren't printed). */
+  const batches = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of registrations ?? []) if (r.batch && r.data) m.set(r.batch, (m.get(r.batch) ?? 0) + 1);
+    return [...m].sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+  }, [registrations]);
+  const unbatched = (registrations ?? []).filter((r) => !r.batch).length;
 
   const counts = useMemo(() => {
     const c: Record<BadgeStatus | 'all', number> = { all: 0, pending: 0, current: 0, invalid: 0 };
@@ -153,6 +189,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
     return (registrations ?? [])
       .filter((r) => status === 'all' || r.status === status)
       .filter((r) => !type || r.data?.type === type)
+      .filter((r) => !batch || (batch === NO_BATCH ? !r.batch : r.batch === batch))
       .filter(
         (r) =>
           !q ||
@@ -163,7 +200,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
           (a.data?.lastName ?? '').localeCompare(b.data?.lastName ?? '') ||
           (a.data?.firstName ?? '').localeCompare(b.data?.firstName ?? ''),
       );
-  }, [registrations, search, type, status]);
+  }, [registrations, search, type, batch, status]);
 
   if (!passcode) {
     return (
@@ -189,7 +226,8 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
     <div className="flex flex-col gap-[16px] pb-[72px]">
       <div className="flex flex-wrap items-center justify-between gap-[12px]">
         <p className="text-[12px] leading-[1.5] text-ink-muted">
-          Print PNGs (3.5″ × 5.5″ + bleed, 300 DPI) are saved to each registration’s <b>Badge</b> and <b>QR Code</b> fields in Airtable.
+          Print PDFs (3.5″ × 5.5″ + bleed) are saved to each registration’s <b>Badge</b> field, with a QR PNG in <b>QR Code</b>.
+          Pick a <b>Batch</b> to download it as one PDF for the printer.
           New registrations and changed details are generated automatically every 15 minutes.
         </p>
         <div className="flex items-center gap-[8px]">
@@ -277,6 +315,16 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
           options={BADGE_TYPES.map((t) => ({ value: t, label: t }))}
           onChange={setType}
         />
+        <Dropdown
+          icon={<Stack size={16} />}
+          label="Batch"
+          value={batch}
+          options={[
+            ...batches.map(([name, n]) => ({ value: name, label: `${name} (${n})` })),
+            { value: NO_BATCH, label: `No batch (${unbatched})` },
+          ]}
+          onChange={setBatch}
+        />
         <div role="tablist" aria-label="Badge status" className="flex gap-[4px]">
           {STATUS_TABS.map((tab) => (
             <button
@@ -295,6 +343,28 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
           ))}
         </div>
       </div>
+
+      {batch && batch !== NO_BATCH && (() => {
+        const count = batches.find(([name]) => name === batch)?.[1] ?? 0;
+        const over = count > MAX_BADGES_PER_BATCH;
+        return (
+          <div className="flex flex-wrap items-center gap-[12px] rounded-[8px] bg-accent-soft px-[12px] py-[8px] text-[14px] leading-[1.5]">
+            <span className="flex-1">
+              Batch <b>{batch}</b>: {count} badge{count === 1 ? '' : 's'}, one per page, sorted by last name.
+              {over && <span className="text-[#b4441f]"> Over the printer’s {MAX_BADGES_PER_BATCH}-badge limit — split it in Airtable.</span>}
+            </span>
+            <button
+              type="button"
+              disabled={!count || over || downloading}
+              onClick={() => void downloadBatch(batch, count)}
+              className={`flex items-center gap-[6px] rounded-[8px] bg-accent px-[12px] py-[6px] text-white hover:bg-[#1f5fe0] disabled:opacity-50 ${focusRing}`}
+            >
+              <DownloadSimple size={16} />
+              {downloading ? 'Rendering…' : `Download ${batch} PDF`}
+            </button>
+          </div>
+        );
+      })()}
 
       {error && <p className="rounded-[8px] bg-[#fc835e]/15 px-[12px] py-[8px] text-[14px] [overflow-wrap:anywhere] text-[#b4441f]">{error}</p>}
 
@@ -323,6 +393,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
                     <p className="truncate text-[14px] leading-[1.4]">{fullName(r)}</p>
                     <p className="truncate text-[12px] leading-[1.4] text-ink-muted">
                       #{r.registrationId ?? '—'} · {r.data?.type ?? 'No badge type'}
+                      {r.batch && ` · ${r.batch}`}
                     </p>
                   </div>
                   <span
@@ -347,11 +418,11 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
                     <button
                       type="button"
                       onClick={() => void preview(r)}
-                      data-tooltip="Render the print PNG without uploading it"
+                      data-tooltip="Render the print PDF without uploading it"
                       className={`flex items-center justify-center gap-[6px] rounded-[8px] bg-overlay-subtle px-[8px] py-[6px] text-[12px] leading-[1.5] hover:brightness-95 ${focusRing}`}
                     >
-                      <FilePng size={14} />
-                      Preview PNG
+                      <FilePdf size={14} />
+                      Preview PDF
                     </button>
                   </div>
                 )}

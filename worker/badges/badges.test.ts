@@ -28,6 +28,11 @@ describe('toRegistrationRow', () => {
     expect(toRegistrationRow(rec({ ...base, [F.badgeType]: undefined })).data).toBeNull();
   });
 
+  it('reads the printer batch', () => {
+    expect(toRegistrationRow(rec({ ...base, [F.batch]: 'B1' })).batch).toBe('B1');
+    expect(toRegistrationRow(rec(base)).batch).toBeNull();
+  });
+
   it('notices existing attachments', () => {
     const row = toRegistrationRow(rec({ ...base, [F.badge]: [{ id: 'att1', url: 'https://x' }] }));
     expect(row).toMatchObject({ hasBadge: true, hasQr: false });
@@ -50,12 +55,17 @@ describe('badgeStatus', () => {
 });
 
 describe('badgeFileNames', () => {
-  it('uses the registration id and a filename-safe name', () => {
+  it('is LastName_FirstName_RegistrationID, filename-safe', () => {
     const row = toRegistrationRow(rec({ ...base, [F.firstName]: 'José', [F.lastName]: "O'Neil-Smith" }));
-    expect(badgeFileNames(row, row.data!)).toEqual({
-      badge: 'Badge_31614860_JoseONeilSmith.png',
-      qr: 'QR_31614860_JoseONeilSmith.png',
+    expect(badgeFileNames(row)).toEqual({
+      badge: 'ONeilSmith_Jose_31614860.pdf',
+      qr: 'ONeilSmith_Jose_31614860_QR.png',
     });
+  });
+
+  it('uses the printed (preferred) first name', () => {
+    const row = toRegistrationRow(rec({ ...base, [F.preferredName]: 'Bree' }));
+    expect(badgeFileNames(row).badge).toBe('Vispisiano_Bree_31614860.pdf');
   });
 });
 

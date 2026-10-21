@@ -46,12 +46,21 @@ export async function generateBadges(passcode: string, recordIds: string[]): Pro
   return body.results ?? [];
 }
 
-/** The print PNG exactly as it would be uploaded, without uploading it. */
-export async function previewBadgePng(passcode: string, recordId: string): Promise<Blob> {
-  const res = await adminFetch(passcode, `/api/admin/badges/${recordId}/preview.png`);
+async function adminBlob(passcode: string, path: string): Promise<Blob> {
+  const res = await adminFetch(passcode, path);
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? `Preview failed (${res.status})`);
+    throw new Error(body.error ?? `Request failed (${res.status})`);
   }
   return res.blob();
+}
+
+/** The print PDF exactly as it would be uploaded, without uploading it. */
+export function previewBadgePdf(passcode: string, recordId: string): Promise<Blob> {
+  return adminBlob(passcode, `/api/admin/badges/${recordId}/preview`);
+}
+
+/** One Airtable Batch as a single PDF (a page per badge) for the printer. */
+export function downloadBatchPdf(passcode: string, batch: string): Promise<Blob> {
+  return adminBlob(passcode, `/api/admin/badges/batches/${encodeURIComponent(batch)}`);
 }

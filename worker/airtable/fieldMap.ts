@@ -63,6 +63,8 @@ export const AIRTABLE = {
       qrLink: 'QR Code Link',
       /** Formula — one of BADGE_TYPES (shared/badges.ts). */
       badgeType: 'Badge Type',
+      /** Single select — printer batch (B1, B2…), at most 100 badges each. */
+      batch: 'Batch',
       /** Attachments written by this app (unsynced fields, safe to overwrite). */
       badge: 'Badge',
       qrCode: 'QR Code',

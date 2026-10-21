@@ -1,6 +1,6 @@
 import type { SyncResponse } from '../shared/types';
 import { handleBizzaboFetch } from './admin';
-import { generatePendingBadges, handleGenerateBadges, handleListBadges, handlePreviewBadge } from './badges';
+import { generatePendingBadges, handleBatchPdf, handleGenerateBadges, handleListBadges, handlePreviewBadge } from './badges';
 import { readImageSources, readSnapshot, syncFromAirtable } from './sync';
 
 const json = (body: unknown, init: ResponseInit = {}) =>
@@ -69,8 +69,10 @@ export default {
     if (pathname === '/api/admin/badges' && request.method === 'GET') return handleListBadges(request, env);
     if (pathname === '/api/admin/badges/generate' && request.method === 'POST') return handleGenerateBadges(request, env);
 
-    const preview = pathname.match(/^\/api\/admin\/badges\/(rec\w+)\/preview\.png$/);
+    const preview = pathname.match(/^\/api\/admin\/badges\/(rec\w+)\/preview$/);
     if (preview && request.method === 'GET') return handlePreviewBadge(request, env, preview[1]!);
+    const batch = pathname.match(/^\/api\/admin\/badges\/batches\/([^/]+)$/);
+    if (batch && request.method === 'GET') return handleBatchPdf(request, env, decodeURIComponent(batch[1]!));
 
     const image = pathname.match(/^\/api\/images\/([^/]+)$/);
     if (image && request.method === 'GET') return handleImage(decodeURIComponent(image[1]), env, ctx);

@@ -156,9 +156,11 @@ Secrets (`npx wrangler secret put <NAME>`; locally in `.dev.vars`):
 ## Admin: Badges
 
 Print badges for every registration in the Airtable **Registrations** table
-(synced from Bizzabo). Each badge is a PNG at 300 DPI: 3.5″ × 5.5″ trim plus
-bleed with crop marks, 1113 × 1725 px. It's saved to the record's **Badge**
-field, with a standalone QR PNG (2″, 600 px) in **QR Code**. The QR encodes the
+(synced from Bizzabo). Each badge is a one-page **PDF** for the print vendor:
+3.5″ × 5.5″ trim plus bleed with crop marks (a 267.12 × 414 pt page), with
+vector text and QR. It's saved to the record's **Badge** field as
+`LastName_FirstName_RegistrationID.pdf`, with a standalone QR PNG (2″, 600 px,
+300 DPI) in **QR Code** as `…_QR.png`. The QR encodes the
 record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own tickets.
 
 - **Template:** [`src/badges/BadgeCard.tsx`](src/badges/BadgeCard.tsx), with one style per
@@ -177,10 +179,15 @@ record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own ti
   25 pending badges. **Bump `BADGE_TEMPLATE_VERSION`** in
   [`shared/badges.ts`](shared/badges.ts) after changing the template, so every
   badge regenerates.
+- **Printer batches:** the Registrations **Batch** select (B1, B2…) groups badges
+  for the vendor, at most 100 per batch. Pick a batch on the Badges page and
+  click **Download batch PDF**. It gives one PDF with a badge per page, sorted
+  by last name (`GET /api/admin/badges/batches/:batch`), and refuses batches
+  over 100.
 - **Admin page:** go to **Admin only → Badges** (`#/badges`, passcode required). It shows
   every registration rendered live, with its status. *Generate pending* and
   *Regenerate all* run in batches of 10. Each card has **Generate/Regenerate**
-  and **Preview PNG**, which renders the print file without uploading it.
+  and **Preview PDF**, which renders the print file without uploading it.
   Deleting a record's Badge in Airtable also queues it for the next cron run.
 
 ## Scripts

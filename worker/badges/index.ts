@@ -1,4 +1,4 @@
-import type { BadgeData, BadgeResult, BadgeRunResponse, BadgesResponse } from '../../shared/badges';
+import { MAX_BADGES_PER_BATCH, type BadgeResult, type BadgeRunResponse, type BadgesResponse } from '../../shared/badges';
 import { checkAdmin } from '../admin';
 import { isMockMode } from '../sync';
 import {
@@ -21,13 +21,22 @@ const CRON_LIMIT = 25;
 
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 
+/** Letters and digits only (accents dropped), so names sort and travel safely. */
 const filePart = (text: string) => text.normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, '');
 
-export function badgeFileNames(row: Pick<RegistrationRow, 'recordId' | 'registrationId'>, data: BadgeData) {
-  const id = row.registrationId ?? row.recordId;
-  const name = filePart(`${data.firstName}${data.lastName}`) || 'Badge';
-  return { badge: `Badge_${id}_${name}.png`, qr: `QR_${id}_${name}.png` };
+/** LastName_FirstName_RegistrationID — sorts by last name in the printer's folders. */
+export function badgeFileNames(row: Pick<RegistrationRow, 'recordId' | 'registrationId' | 'data'>) {
+  const base = [row.data?.lastName, row.data?.firstName, String(row.registrationId ?? row.recordId)]
+    .map((part) => filePart(part ?? ''))
+    .filter(Boolean)
+    .join('_');
+  return { badge: `${base}.pdf`, qr: `${base}_QR.png` };
 }
+
+const byName = (a: RegistrationRow, b: RegistrationRow) =>
+  (a.data?.lastName ?? '').localeCompare(b.data?.lastName ?? '') ||
+  (a.data?.firstName ?? '').localeCompare(b.data?.firstName ?? '') ||
+  (a.registrationId ?? 0) - (b.registrationId ?? 0);
 
 /** Render + upload badges for `rows`. Fingerprints are saved even if a later badge fails. */
 async function generate(env: Env, origin: string, rows: RegistrationRow[]): Promise<BadgeResult[]> {
@@ -45,11 +54,11 @@ async function generate(env: Env, origin: string, rows: RegistrationRow[]): Prom
       for (const row of todo) {
         const data = row.data!;
         try {
-          const pngs = await render(data);
-          const names = badgeFileNames(row, data);
+          const files = await render.badge(data);
+          const names = badgeFileNames(row);
           await writeBadge(env, row.recordId, {
-            badge: { name: names.badge, png: pngs.badge },
-            qr: { name: names.qr, png: pngs.qr },
+            badge: { name: names.badge, contentType: 'application/pdf', bytes: files.pdf },
+            qr: { name: names.qr, contentType: 'image/png', bytes: files.qr },
           });
           done[row.recordId] = await badgeFingerprint(data);
           results.push({ recordId: row.recordId, ok: true });
@@ -123,7 +132,7 @@ export async function handleGenerateBadges(request: Request, env: Env): Promise<
   }
 }
 
-/** GET /api/admin/badges/:recordId/preview.png[?part=qr] — render without uploading. */
+/** GET /api/admin/badges/:recordId/preview[?part=qr] — the badge PDF (or QR PNG), without uploading. */
 export async function handlePreviewBadge(request: Request, env: Env, recordId: string): Promise<Response> {
   const denied = checkAdmin(request, env);
   if (denied) return denied;
@@ -132,14 +141,45 @@ export async function handlePreviewBadge(request: Request, env: Env, recordId: s
   if (!row.data) return json({ ok: false, error: row.invalidReason }, 422);
 
   const url = new URL(request.url);
-  const pngs = await withBadgeRenderer(env, url.origin, (render) => render(row.data!));
+  const files = await withBadgeRenderer(env, url.origin, (render) => render.badge(row.data!));
   const qr = url.searchParams.get('part') === 'qr';
-  const names = badgeFileNames(row, row.data);
-  return new Response(qr ? pngs.qr : pngs.badge, {
+  const names = badgeFileNames(row);
+  return new Response(qr ? files.qr : files.pdf, {
     headers: {
-      'Content-Type': 'image/png',
+      'Content-Type': qr ? 'image/png' : 'application/pdf',
       'Content-Disposition': `inline; filename="${qr ? names.qr : names.badge}"`,
       'Cache-Control': 'no-store',
     },
   });
+}
+
+/**
+ * GET /api/admin/badges/batches/:batch — every badge in one Airtable Batch as a
+ * single PDF (a page each, sorted by last name) for the printer. Rendered from
+ * the current Airtable data, so it matches the per-registration PDFs.
+ */
+export async function handleBatchPdf(request: Request, env: Env, batch: string): Promise<Response> {
+  const denied = checkAdmin(request, env);
+  if (denied) return denied;
+  try {
+    const rows = await readRegistrations(env, { batch });
+    const valid = rows.filter((r) => r.data).sort(byName);
+    if (!valid.length) return json({ ok: false, error: `Batch ${batch} has no printable badges` }, 404);
+    if (valid.length > MAX_BADGES_PER_BATCH) {
+      return json({ ok: false, error: `Batch ${batch} has ${valid.length} badges — the printer takes at most ${MAX_BADGES_PER_BATCH}. Split it in Airtable.` }, 422);
+    }
+    const pdf = await withBadgeRenderer(env, new URL(request.url).origin, (render) => render.sheet(valid.map((r) => r.data!)));
+    const name = `RCGNZ-Badges_${filePart(batch) || 'Batch'}_${valid.length}.pdf`;
+    return new Response(pdf, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${name}"`,
+        'X-Badge-Count': String(valid.length),
+        'X-Badges-Skipped': String(rows.length - valid.length),
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (err) {
+    return json({ ok: false, error: (err as Error).message }, 502);
+  }
 }
