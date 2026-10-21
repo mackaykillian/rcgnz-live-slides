@@ -7,4 +7,14 @@ import { cloudflare } from '@cloudflare/vite-plugin';
 // `npm run dev`, with local R2 + .dev.vars, so dev matches production.
 export default defineConfig({
   plugins: [react(), tailwindcss(), cloudflare()],
+  environments: {
+    client: {
+      build: {
+        rollupOptions: {
+          // badge-render.html is the headless page the Worker's browser renders badges in.
+          input: { main: 'index.html', badgeRender: 'badge-render.html' },
+        },
+      },
+    },
+  },
 });

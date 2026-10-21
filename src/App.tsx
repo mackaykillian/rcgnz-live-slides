@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { AdminAuthError, clearAdminPasscode, fetchBizzabo, getAdminPasscode, setAdminPasscode } from './data/admin';
 import { useSnapshot } from './data/useSnapshot';
+import { BadgesView } from './badges/BadgesView';
 import { CalendarView } from './calendar/CalendarView';
 import { copySlide, downloadSlide, downloadSlides } from './export/exportSlides';
 import { DEFAULT_SORT, filterAndSortSlides, type SlideQuery, type SortKey } from './lib/filterSlides';
@@ -124,9 +125,18 @@ export default function App() {
     );
   };
 
-  // "Fetch Bizzabo" (admin only): Bizzabo → Airtable, then Airtable → slides.
+  // Admin only. `then` is what to do once a passcode is entered.
+  const [adminPasscode, setAdminPasscodeState] = useState(getAdminPasscode);
+  const [passcodePrompt, setPasscodePrompt] = useState<{ error: string | null; then: 'bizzabo' | 'badges' } | null>(null);
+  const forgetPasscode = useCallback((error: string | null, then: 'bizzabo' | 'badges') => {
+    clearAdminPasscode();
+    setAdminPasscodeState(null);
+    setPasscodePrompt({ error, then });
+  }, []);
+  const onBadgesNeedPasscode = useCallback((error: string | null) => forgetPasscode(error, 'badges'), [forgetPasscode]);
+
+  // "Fetch Bizzabo": Bizzabo → Airtable, then Airtable → slides.
   const [bizzaboRunning, setBizzaboRunning] = useState(false);
-  const [passcodePrompt, setPasscodePrompt] = useState<{ error: string | null } | null>(null);
 
   const runBizzaboFetch = async (passcode: string) => {
     setBizzaboRunning(true);
@@ -136,8 +146,7 @@ export default function App() {
       show('success', 'Bizzabo fetch success');
     } catch (err) {
       if (err instanceof AdminAuthError) {
-        clearAdminPasscode();
-        setPasscodePrompt({ error: err.message });
+        forgetPasscode(err.message, 'bizzabo');
       } else {
         console.error(err);
         show('error', `Bizzabo fetch failed: ${(err as Error).message}`);
@@ -150,7 +159,7 @@ export default function App() {
   const onFetchBizzabo = () => {
     const saved = getAdminPasscode();
     if (saved) void runBizzaboFetch(saved);
-    else setPasscodePrompt({ error: null });
+    else setPasscodePrompt({ error: null, then: 'bizzabo' });
   };
 
   const onSync = async () => {
@@ -163,7 +172,9 @@ export default function App() {
   const openIndex = openItem ? slides.findIndex((s) => s.id === openItem.id) : -1;
 
   const crumbs =
-    route.section === 'calendar'
+    route.section === 'badges'
+      ? ['Badges']
+      : route.section === 'calendar'
       ? ['Agenda Timeline View']
       : route.section === 'slideshow'
       ? activeDeck
@@ -202,7 +213,9 @@ export default function App() {
 
         <section
           className={`min-h-0 flex-1 rounded-[8px] p-[32px] ${
-            route.section === 'calendar'
+            route.section === 'badges'
+              ? 'overflow-y-auto bg-white'
+              : route.section === 'calendar'
               ? 'bg-ink'
               : route.section === 'slideshow'
                 ? activeDeck
@@ -211,7 +224,9 @@ export default function App() {
                 : 'overflow-y-auto bg-white'
           }`}
         >
-          {route.section === 'calendar' ? (
+          {route.section === 'badges' ? (
+            <BadgesView passcode={adminPasscode} onNeedPasscode={onBadgesNeedPasscode} notify={show} />
+          ) : route.section === 'calendar' ? (
             snapshot ? (
               <CalendarView
                 snapshot={snapshot}
@@ -285,8 +300,9 @@ export default function App() {
           onCancel={() => setPasscodePrompt(null)}
           onSubmit={(passcode) => {
             setAdminPasscode(passcode);
+            setAdminPasscodeState(passcode);
             setPasscodePrompt(null);
-            void runBizzaboFetch(passcode);
+            if (passcodePrompt.then === 'bizzabo') void runBizzaboFetch(passcode);
           }}
         />
       )}

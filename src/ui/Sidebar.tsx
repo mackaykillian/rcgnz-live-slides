@@ -7,6 +7,7 @@ import {
   CaretRight,
   Cloud,
   FigmaLogo,
+  IdentificationBadge,
   ImageSquare,
   ImagesSquare,
   MapPin,
@@ -220,6 +221,14 @@ export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse, 
               {/* Only shown while the fetch is running. */}
               {bizzaboRunning && <ArrowsClockwise size={16} className="animate-spin" aria-label="Fetching" />}
             </button>
+            <a
+              href={routeHref({ section: 'badges' })}
+              aria-current={route.section === 'badges' ? 'page' : undefined}
+              className={`flex w-full items-center gap-[6px] rounded-[6px] px-[8px] py-[7px] text-[14px] leading-[18px] ${focusRing} ${highlightClass[route.section === 'badges' ? 'accent' : 'none']}`}
+            >
+              <IdentificationBadge size={16} className="shrink-0" />
+              Badges
+            </a>
           </div>
         </div>
 

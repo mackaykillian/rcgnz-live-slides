@@ -19,8 +19,14 @@
 
   "vars": {
     "AIRTABLE_BASE_ID": "appFtt4DomwAITJTa",
-    "EVENT_NAME": "RCGNZ Summit 2026"
+    "EVENT_NAME": "RCGNZ Summit 2026",
+    // Where the badge renderer's browser loads badge-render.html from on cron runs
+    // (admin requests use their own origin). Override in .dev.vars for local dev.
+    "PUBLIC_ORIGIN": "https://rcgnz-live-slides.web-5fb.workers.dev"
   },
+
+  // Headless Chrome for rendering badges (worker/badges/render.ts). Runs locally under `npm run dev`.
+  "browser": { "binding": "BROWSER" },
 
   // The Bizzabo → Airtable sync worker (see "Fetch Bizzabo"). Called through a
   // service binding: Cloudflare blocks a Worker from fetching another Worker's

@@ -1,5 +1,6 @@
 import type { SyncResponse } from '../shared/types';
 import { handleBizzaboFetch } from './admin';
+import { generatePendingBadges, handleGenerateBadges, handleListBadges, handlePreviewBadge } from './badges';
 import { readImageSources, readSnapshot, syncFromAirtable } from './sync';
 
 const json = (body: unknown, init: ResponseInit = {}) =>
@@ -65,6 +66,11 @@ export default {
     if (pathname === '/api/snapshot' && request.method === 'GET') return handleSnapshot(env);
     if (pathname === '/api/sync' && request.method === 'POST') return handleSync(env);
     if (pathname === '/api/admin/bizzabo-fetch' && request.method === 'POST') return handleBizzaboFetch(request, env);
+    if (pathname === '/api/admin/badges' && request.method === 'GET') return handleListBadges(request, env);
+    if (pathname === '/api/admin/badges/generate' && request.method === 'POST') return handleGenerateBadges(request, env);
+
+    const preview = pathname.match(/^\/api\/admin\/badges\/(rec\w+)\/preview\.png$/);
+    if (preview && request.method === 'GET') return handlePreviewBadge(request, env, preview[1]!);
 
     const image = pathname.match(/^\/api\/images\/([^/]+)$/);
     if (image && request.method === 'GET') return handleImage(decodeURIComponent(image[1]), env, ctx);
@@ -76,5 +82,7 @@ export default {
     ctx.waitUntil(
       syncFromAirtable(env, { force: true }).catch((err) => console.error('Scheduled sync failed', err)),
     );
+    // First-time badges for new registrations, and refreshes for changed details.
+    ctx.waitUntil(generatePendingBadges(env).catch((err) => console.error('Scheduled badges failed', err)));
   },
 } satisfies ExportedHandler<Env>;

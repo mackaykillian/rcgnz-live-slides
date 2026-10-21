@@ -1,0 +1,12 @@
+<svg width="267.12" height="414" viewBox="0 0 267.12 414" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Crop Marks">
+<path id="Mark (TLH)" d="M0 8.75H4.5" stroke-width="0.5" stroke="black"/>
+<path id="Mark (TLV)" d="M9.25 0V4.5" stroke-width="0.5" stroke="black"/>
+<path id="Mark (TRH)" d="M262.62 8.75H267.12" stroke-width="0.5" stroke="black"/>
+<path id="Mark (TRV)" d="M258.37 0V4.5" stroke-width="0.5" stroke="black"/>
+<path id="Mark (BLH)" d="M0 404.75H4.5" stroke-width="0.5" stroke="black"/>
+<path id="Mark (BLV)" d="M9.25 409.5V414" stroke-width="0.5" stroke="black"/>
+<path id="Mark (BRH)" d="M262.62 404.75H267.12" stroke-width="0.5" stroke="black"/>
+<path id="Mark (BRV)" d="M258.37 409.5V414" stroke-width="0.5" stroke="black"/>
+</g>
+</svg>

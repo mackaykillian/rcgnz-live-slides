@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <title>Badge renderer</title>
+  </head>
+  <!-- Headless page the Worker's browser loads to render badges (see worker/badges/render.ts). Holds no data itself. -->
+  <body style="margin: 0; background: #ffffff">
+    <div id="root"></div>
+    <script type="module" src="/src/badges/render-main.tsx"></script>
+  </body>
+</html>

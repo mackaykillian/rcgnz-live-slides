@@ -6,14 +6,17 @@ import { isTemplateId, type TemplateId } from '../slides/templates';
  *   #/slides, #/slides/standard
  *   #/slideshow, #/slideshow/grand-ballroom, #/slideshow/grand-ballroom/<entry key>
  *   #/calendar, #/calendar/2026-11-10
+ *   #/badges (admin only)
  */
 export type Route =
   | { section: 'slides'; template: TemplateId | null }
   | { section: 'slideshow'; deck: string | null; slide: string | null }
-  | { section: 'calendar'; day: string | null };
+  | { section: 'calendar'; day: string | null }
+  | { section: 'badges' };
 
 export function parseRoute(hash: string): Route {
   const [section, deck, ...rest] = hash.replace(/^#\/?/, '').split('/');
+  if (section === 'badges') return { section };
   if (section === 'calendar') return { section, day: deck && /^\d{4}-\d{2}-\d{2}$/.test(deck) ? deck : null };
   if (section === 'slideshow') {
     const slide = rest.join('/');
@@ -23,6 +26,7 @@ export function parseRoute(hash: string): Route {
 }
 
 export function routeHref(route: Route): string {
+  if (route.section === 'badges') return '#/badges';
   if (route.section === 'calendar') return route.day ? `#/calendar/${route.day}` : '#/calendar';
   if (route.section === 'slideshow') {
     if (!route.deck) return '#/slideshow';

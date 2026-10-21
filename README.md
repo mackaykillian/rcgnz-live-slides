@@ -24,14 +24,16 @@ sessions taken from the signage project's mock data. The sidebar shows
 ### Airtable token
 
 1. Create a personal access token at <https://airtable.com/create/tokens>.
-   - Scopes: `data.records:read` and `schema.bases:read`.
+   - Scopes: `data.records:read`, `data.records:write` (badges) and `schema.bases:read`.
    - Access: only the RCGNZ base (`appFtt4DomwAITJTa`).
 2. Paste it into `.dev.vars` as `AIRTABLE_TOKEN=pat…`. The file is gitignored.
 3. Run `npm run airtable:schema` to print the base's real tables and fields.
 4. Update [`worker/airtable/fieldMap.ts`](worker/airtable/fieldMap.ts) to match.
    It's the only file that knows Airtable field names.
 
-The token is only ever read by the Worker. It never reaches the browser.
+The token is only ever read by the Worker. It never reaches the browser. The
+only thing the app writes is the Registrations table's **Badge** and **QR Code**
+attachments (see Badges below).
 
 ## How it works
 
@@ -150,6 +152,36 @@ Secrets (`npx wrangler secret put <NAME>`; locally in `.dev.vars`):
 | rcgnz-live-slides | `ADMIN_PASSCODE` | Passcode admins type in the app |
 | rcgnz-live-slides | `BIZZABO_SYNC_SECRET` | Same value as below |
 | airtable-bizzabo-sync | `MANUAL_SYNC_SECRET` | Enables its `POST /` manual trigger |
+
+## Admin: Badges
+
+Print badges for every registration in the Airtable **Registrations** table
+(synced from Bizzabo). Each badge is a PNG at 300 DPI: 3.5″ × 5.5″ trim plus
+bleed with crop marks, 1113 × 1725 px. It's saved to the record's **Badge**
+field, with a standalone QR PNG (2″, 600 px) in **QR Code**. The QR encodes the
+record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own tickets.
+
+- **Template:** [`src/badges/BadgeCard.tsx`](src/badges/BadgeCard.tsx), with one style per
+  *Badge Type* in [`styles.ts`](src/badges/styles.ts). The Figma frames are in
+  "Badge Designs" (node 12525-24140). The blurred glow backgrounds are
+  pre-rendered PNGs (`src/assets/badges/bg-*.png`). *Preferred Name* replaces
+  *First Name*. Long names shrink to fit, and companies wrap to two lines and then shrink.
+- **Rendering:** the Worker opens [`badge-render.html`](badge-render.html) in
+  Cloudflare Browser Rendering (the `BROWSER` binding) and screenshots the same
+  React template ([`worker/badges/render.ts`](worker/badges/render.ts)). Locally, `npm run dev`
+  runs this in a local headless Chrome. Open `/badge-render.html#sample=Sponsor`
+  to see any type with placeholder data.
+- **When badges are made:** a badge is *pending* when Badge or QR Code is empty,
+  or when the name, company, type or QR link changed since it was made. Changes
+  are tracked by a fingerprint in KV. Every 15 minutes the cron generates up to
+  25 pending badges. **Bump `BADGE_TEMPLATE_VERSION`** in
+  [`shared/badges.ts`](shared/badges.ts) after changing the template, so every
+  badge regenerates.
+- **Admin page:** go to **Admin only → Badges** (`#/badges`, passcode required). It shows
+  every registration rendered live, with its status. *Generate pending* and
+  *Regenerate all* run in batches of 10. Each card has **Generate/Regenerate**
+  and **Preview PNG**, which renders the print file without uploading it.
+  Deleting a record's Badge in Airtable also queues it for the next cron run.
 
 ## Scripts
 

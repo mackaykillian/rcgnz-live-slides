@@ -50,4 +50,22 @@ export const AIRTABLE = {
       aqua: 'Headshot (2026 Aqua)',
     },
   },
+  registrations: {
+    table: 'tblI85Bbry8XGsnSq', // Registrations (synced from Bizzabo)
+    fields: {
+      registrationId: 'Registration ID',
+      firstName: 'First Name',
+      /** Printed instead of First Name when set. */
+      preferredName: 'Preferred Name',
+      lastName: 'Last Name',
+      company: 'Company',
+      /** Formula — the Bizzabo attendee URL encoded in the QR. */
+      qrLink: 'QR Code Link',
+      /** Formula — one of BADGE_TYPES (shared/badges.ts). */
+      badgeType: 'Badge Type',
+      /** Attachments written by this app (unsynced fields, safe to overwrite). */
+      badge: 'Badge',
+      qrCode: 'QR Code',
+    },
+  },
 } as const;

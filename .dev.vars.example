@@ -1,5 +1,5 @@
 # Copy to .dev.vars and paste your Airtable personal access token.
-# Scopes: data.records:read, schema.bases:read — access: the RCGNZ base only.
+# Scopes: data.records:read, data.records:write (badges), schema.bases:read — access: the RCGNZ base only.
 # Leave empty to run with mock data.
 AIRTABLE_TOKEN=
 
@@ -7,3 +7,6 @@ AIRTABLE_TOKEN=
 ADMIN_PASSCODE=
 # Shared with the airtable-bizzabo-sync worker (its MANUAL_SYNC_SECRET).
 BIZZABO_SYNC_SECRET=
+
+# Optional: where the cron's badge renderer loads badge-render.html (defaults to production in wrangler.jsonc).
+# PUBLIC_ORIGIN=http://localhost:5179

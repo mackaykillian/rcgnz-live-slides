@@ -15,7 +15,7 @@ interface DropdownProps {
 }
 
 /** Styled like the Figma filter chip; a transparent native <select> on top keeps it accessible. */
-function Dropdown({ icon, label, value, options, onChange, disabled, title }: DropdownProps) {
+export function Dropdown({ icon, label, value, options, onChange, disabled, title }: DropdownProps) {
   const current = options.find((o) => o.value === value);
   return (
     <label
