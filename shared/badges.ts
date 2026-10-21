@@ -67,6 +67,8 @@ export interface BadgeRegistration {
   registrationId: number | null;
   /** Airtable "Batch" (e.g. B1) — badges are sent to the printer one batch PDF at a time. */
   batch: string | null;
+  /** ISO time the current Badge/QR Code were uploaded ("Badge Generated At"). */
+  generatedAt: string | null;
   /** Null when invalid. */
   data: BadgeData | null;
   status: BadgeStatus;
@@ -83,6 +85,8 @@ export interface BadgesResponse {
 export interface BadgeResult {
   recordId: string;
   ok: boolean;
+  /** Set when ok. */
+  generatedAt?: string;
   error?: string;
 }
 

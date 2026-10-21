@@ -56,12 +56,12 @@ async function generate(env: Env, origin: string, rows: RegistrationRow[]): Prom
         try {
           const files = await render.badge(data);
           const names = badgeFileNames(row);
-          await writeBadge(env, row.recordId, {
+          const generatedAt = await writeBadge(env, row.recordId, {
             badge: { name: names.badge, contentType: 'application/pdf', bytes: files.pdf },
             qr: { name: names.qr, contentType: 'image/png', bytes: files.qr },
           });
           done[row.recordId] = await badgeFingerprint(data);
-          results.push({ recordId: row.recordId, ok: true });
+          results.push({ recordId: row.recordId, ok: true, generatedAt });
         } catch (err) {
           console.error(`Badge ${row.recordId} failed`, err);
           results.push({ recordId: row.recordId, ok: false, error: (err as Error).message });

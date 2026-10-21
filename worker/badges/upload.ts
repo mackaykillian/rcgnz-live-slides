@@ -58,18 +58,23 @@ async function uploadFile(env: Env, recordId: string, field: string, file: Badge
 }
 
 /**
- * Replace the record's Badge and QR Code attachments. The new files are
- * uploaded first and the old ones dropped after, so a record never sits empty.
+ * Replace the record's Badge and QR Code attachments and stamp "Badge Generated
+ * At". The new files are uploaded first and the old ones dropped after, so a
+ * record never sits empty. Returns the timestamp written.
  */
 export async function writeBadge(
   env: Env,
   recordId: string,
   files: { badge: BadgeFile; qr: BadgeFile },
-): Promise<void> {
+): Promise<string> {
+  const generatedAt = new Date().toISOString();
   const badgeId = await uploadFile(env, recordId, R.fields.badge, files.badge);
   const qrId = await uploadFile(env, recordId, R.fields.qrCode, files.qr);
   await airtableRequest(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${R.table}/${recordId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ fields: { [R.fields.badge]: [{ id: badgeId }], [R.fields.qrCode]: [{ id: qrId }] } }),
+    body: JSON.stringify({
+      fields: { [R.fields.badge]: [{ id: badgeId }], [R.fields.qrCode]: [{ id: qrId }], [R.fields.generatedAt]: generatedAt },
+    }),
   });
+  return generatedAt;
 }

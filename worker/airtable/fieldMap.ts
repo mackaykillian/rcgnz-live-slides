@@ -68,6 +68,8 @@ export const AIRTABLE = {
       /** Attachments written by this app (unsynced fields, safe to overwrite). */
       badge: 'Badge',
       qrCode: 'QR Code',
+      /** Date/time — set by this app whenever it uploads a badge. */
+      generatedAt: 'Badge Generated At',
     },
   },
 } as const;

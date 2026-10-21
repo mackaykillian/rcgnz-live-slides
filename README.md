@@ -184,6 +184,8 @@ record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own ti
   click **Download batch PDF**. It gives one PDF with a badge per page, sorted
   by last name (`GET /api/admin/badges/batches/:batch`), and refuses batches
   over 100.
+- **Badge Generated At:** every upload stamps this Registrations date/time field.
+  The Badges page shows it on each card.
 - **Admin page:** go to **Admin only → Badges** (`#/badges`, passcode required). It shows
   every registration rendered live, with its status. *Generate pending* and
   *Regenerate all* run in batches of 10. Each card has **Generate/Regenerate**

@@ -6,7 +6,7 @@ import {
 } from '../../shared/badges';
 import { listAllRecords, type AirtableRecord } from '../airtable/client';
 import { AIRTABLE } from '../airtable/fieldMap';
-import { asAttachment, asNumber, asText } from '../airtable/normalize';
+import { asAttachment, asIsoDate, asNumber, asText } from '../airtable/normalize';
 
 const R = AIRTABLE.registrations;
 
@@ -15,6 +15,7 @@ export interface RegistrationRow {
   recordId: string;
   registrationId: number | null;
   batch: string | null;
+  generatedAt: string | null;
   data: BadgeData | null;
   invalidReason?: string;
   hasBadge: boolean;
@@ -38,6 +39,7 @@ export function toRegistrationRow(rec: AirtableRecord): RegistrationRow {
     recordId: rec.id,
     registrationId: asNumber(f[R.fields.registrationId]),
     batch: asText(f[R.fields.batch]),
+    generatedAt: asIsoDate(f[R.fields.generatedAt]),
     data:
       invalidReason || !isBadgeType(type) || !qrLink
         ? null
@@ -112,6 +114,7 @@ export async function listBadgeRegistrations(env: Env): Promise<BadgeRegistratio
       recordId: row.recordId,
       registrationId: row.registrationId,
       batch: row.batch,
+      generatedAt: row.generatedAt,
       data: row.data,
       ...(await badgeStatus(row, fingerprints)),
     })),

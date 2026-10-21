@@ -28,6 +28,11 @@ describe('toRegistrationRow', () => {
     expect(toRegistrationRow(rec({ ...base, [F.badgeType]: undefined })).data).toBeNull();
   });
 
+  it('reads when the badge was last generated', () => {
+    expect(toRegistrationRow(rec({ ...base, [F.generatedAt]: '2026-10-21T10:02:00.000Z' })).generatedAt).toBe('2026-10-21T10:02:00.000Z');
+    expect(toRegistrationRow(rec(base)).generatedAt).toBeNull();
+  });
+
   it('reads the printer batch', () => {
     expect(toRegistrationRow(rec({ ...base, [F.batch]: 'B1' })).batch).toBe('B1');
     expect(toRegistrationRow(rec(base)).batch).toBeNull();

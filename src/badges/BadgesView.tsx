@@ -36,6 +36,8 @@ function saveBlob(blob: Blob, fileName: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+const generatedFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
 const fullName = (r: BadgeRegistration) => (r.data ? `${r.data.firstName} ${r.data.lastName}`.trim() : `Registration ${r.registrationId ?? r.recordId}`);
 
 interface Props {
@@ -100,11 +102,16 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
     try {
       for (let i = 0; i < recordIds.length && !stopRef.current; i += BATCH_SIZE) {
         const results = await generateBadges(passcode, recordIds.slice(i, i + BATCH_SIZE));
-        const succeeded = new Set(results.filter((r) => r.ok).map((r) => r.recordId));
+        const succeeded = new Map(results.filter((r) => r.ok).map((r) => [r.recordId, r.generatedAt ?? null]));
         ok += succeeded.size;
         failures.push(...results.filter((r) => !r.ok).map((r) => r.error ?? 'Unknown error'));
-        setRegistrations((prev) =>
-          prev?.map((r) => (succeeded.has(r.recordId) ? { ...r, status: 'current', reason: undefined } : r)) ?? prev,
+        setRegistrations(
+          (prev) =>
+            prev?.map((r) =>
+              succeeded.has(r.recordId)
+                ? { ...r, status: 'current', reason: undefined, generatedAt: succeeded.get(r.recordId) ?? r.generatedAt }
+                : r,
+            ) ?? prev,
         );
         setProgress({ done: Math.min(i + BATCH_SIZE, recordIds.length), total: recordIds.length });
       }
@@ -124,7 +131,14 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
     try {
       const [result] = await generateBadges(passcode, [r.recordId]);
       if (!result?.ok) throw new Error(result?.error ?? 'Badge failed');
-      setRegistrations((prev) => prev?.map((x) => (x.recordId === r.recordId ? { ...x, status: 'current', reason: undefined } : x)) ?? prev);
+      setRegistrations(
+        (prev) =>
+          prev?.map((x) =>
+            x.recordId === r.recordId
+              ? { ...x, status: 'current', reason: undefined, generatedAt: result.generatedAt ?? x.generatedAt }
+              : x,
+          ) ?? prev,
+      );
       notify('success', `Badge for ${fullName(r)} uploaded to Airtable`);
     } catch (err) {
       handleError(err);
@@ -394,6 +408,9 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
                     <p className="truncate text-[12px] leading-[1.4] text-ink-muted">
                       #{r.registrationId ?? '—'} · {r.data?.type ?? 'No badge type'}
                       {r.batch && ` · ${r.batch}`}
+                    </p>
+                    <p className="truncate text-[12px] leading-[1.4] text-ink-muted">
+                      {r.generatedAt ? `Generated ${generatedFormat.format(new Date(r.generatedAt))}` : 'Never generated'}
                     </p>
                   </div>
                   <span
