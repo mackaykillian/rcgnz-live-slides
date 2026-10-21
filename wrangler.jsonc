@@ -31,11 +31,15 @@
   // The Bizzabo → Airtable sync worker (see "Fetch Bizzabo"). Called through a
   // service binding: Cloudflare blocks a Worker from fetching another Worker's
   // workers.dev URL on the same account (error 1042, returned as a 404).
-  "services": [{ "binding": "BIZZABO_SYNC", "service": "airtable-bizzabo-sync" }],
+  // Fetch Bizzabo also runs airtable-bizzabo-tickets (Bizzabo → Registrations, for badges).
+  "services": [
+    { "binding": "BIZZABO_SYNC", "service": "airtable-bizzabo-sync" },
+    { "binding": "BIZZABO_TICKETS", "service": "airtable-bizzabo-tickets" }
+  ],
 
   "observability": { "enabled": true }
   // Secrets (not in this file) — local: .dev.vars, production: npx wrangler secret put <NAME>
   //   AIRTABLE_TOKEN       Airtable personal access token
   //   ADMIN_PASSCODE       unlocks "Admin only" actions in the sidebar
-  //   BIZZABO_SYNC_SECRET  must equal MANUAL_SYNC_SECRET on the airtable-bizzabo-sync worker
+  //   BIZZABO_SYNC_SECRET  must equal MANUAL_SYNC_SECRET on airtable-bizzabo-sync and airtable-bizzabo-tickets
 }

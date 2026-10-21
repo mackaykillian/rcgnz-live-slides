@@ -135,7 +135,7 @@ export default function App() {
   }, []);
   const onBadgesNeedPasscode = useCallback((error: string | null) => forgetPasscode(error, 'badges'), [forgetPasscode]);
 
-  // "Fetch Bizzabo": Bizzabo → Airtable, then Airtable → slides.
+  // "Fetch Bizzabo": Bizzabo → Airtable (sessions + registrations), then Airtable → slides.
   const [bizzaboRunning, setBizzaboRunning] = useState(false);
 
   const runBizzaboFetch = async (passcode: string) => {
@@ -143,7 +143,7 @@ export default function App() {
     try {
       const result = await fetchBizzabo(passcode);
       if (result.snapshot) replaceSnapshot(result.snapshot);
-      show('success', 'Bizzabo fetch success');
+      show('success', 'Bizzabo fetch success — sessions and registrations updated');
     } catch (err) {
       if (err instanceof AdminAuthError) {
         forgetPasscode(err.message, 'bizzabo');

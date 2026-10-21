@@ -135,12 +135,17 @@ npm run deploy                     # builds, then `wrangler deploy`
 
 ## Admin: Fetch Bizzabo
 
-The sidebar's **Admin only → Fetch Bizzabo** runs the separate
-`airtable-bizzabo-sync` worker (Bizzabo → Airtable) on demand. After that, it
-re-syncs this app from Airtable. It goes through `POST /api/admin/bizzabo-fetch`,
+The sidebar's **Admin only → Fetch Bizzabo** runs two separate workers on
+demand, in parallel:
+
+- `airtable-bizzabo-sync` writes sessions and agenda data to Airtable.
+- `airtable-bizzabo-tickets` writes the **Registrations** table used for badges.
+
+After that, it re-syncs this app from Airtable. New registrations get badges on
+the next 15-minute run. It goes through `POST /api/admin/bizzabo-fetch`,
 which requires the admin passcode. The browser asks for it once and remembers it.
-The app reaches the Bizzabo worker through a **service binding** (`BIZZABO_SYNC`
-in `wrangler.jsonc`), not its public URL. Cloudflare blocks one Worker from
+The app reaches both workers through **service bindings** (`BIZZABO_SYNC` and
+`BIZZABO_TICKETS` in `wrangler.jsonc`), not their public URLs. Cloudflare blocks one Worker from
 fetching another's `workers.dev` URL on the same account (error 1042, which
 shows up as a 404). In `npm run dev` the Bizzabo worker isn't running, so this
 action reports that it can't be reached. Test it on the deployed app.
@@ -152,6 +157,7 @@ Secrets (`npx wrangler secret put <NAME>`; locally in `.dev.vars`):
 | rcgnz-live-slides | `ADMIN_PASSCODE` | Passcode admins type in the app |
 | rcgnz-live-slides | `BIZZABO_SYNC_SECRET` | Same value as below |
 | airtable-bizzabo-sync | `MANUAL_SYNC_SECRET` | Enables its `POST /` manual trigger |
+| airtable-bizzabo-tickets | `MANUAL_SYNC_SECRET` | Same value; enables its manual trigger |
 
 ## Admin: Badges
 
