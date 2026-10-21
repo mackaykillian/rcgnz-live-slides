@@ -30,9 +30,6 @@ export function BadgeCard({ data }: { data: BadgeData }) {
     >
       <img src={style.background} alt="" className="absolute inset-0 size-full" />
 
-      {/* Lanyard slot */}
-      <div className="absolute top-[25px] left-[calc(50%+1.44px)] h-[8px] w-[38px] -translate-x-1/2 rounded-full bg-[#020e1e]" />
-
       <img
         src={summitLogo}
         alt="RCGNZ Summit"

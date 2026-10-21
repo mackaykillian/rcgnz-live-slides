@@ -23,7 +23,7 @@ export const isBadgeType = (value: unknown): value is BadgeType =>
  * Bump whenever the badge template changes visually. Every badge rendered with
  * an older version counts as out of date and is regenerated automatically.
  */
-export const BADGE_TEMPLATE_VERSION = 2; // 2: badge file is a PDF; LastName_FirstName_ID names
+export const BADGE_TEMPLATE_VERSION = 3; // 2: PDF + LastName_FirstName_ID names; 3: no lanyard-slot marker
 
 /**
  * Print geometry. The Figma frame is in points (1/72"): trim plus bleed, with
