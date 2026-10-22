@@ -480,11 +480,10 @@ export function BadgesView({ passcode, onNeedPasscode, notify, headerSlot, botto
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-[8px]" style={{ width: PAGE_WIDTH }}>
-                  <div className="min-w-0">
+                  <div className="flex min-w-0 flex-col gap-[2px]">
                     <p className="truncate text-[14px] leading-[1.4]">{fullName(r)}</p>
                     <p className="truncate text-[12px] leading-[1.4] text-ink-muted">
                       #{r.registrationId ?? '—'} · {r.data?.type ?? 'No badge type'}
-                      {r.batch && ` · ${r.batch}`}
                     </p>
                     <p className="truncate text-[12px] leading-[1.4] text-ink-muted">
                       {r.generatedAt ? `Generated ${generatedFormat.format(new Date(r.generatedAt))}` : 'Never generated'}
@@ -513,7 +512,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify, headerSlot, botto
                       type="button"
                       onClick={() => void preview(r)}
                       data-tooltip="Render the print PDF without uploading it"
-                      className={`flex items-center justify-center gap-[6px] rounded-[8px] bg-overlay-subtle px-[8px] py-[6px] text-[12px] leading-[1.5] hover:brightness-95 ${focusRing}`}
+                      className={`flex flex-1 items-center justify-center gap-[6px] rounded-[8px] bg-overlay-subtle px-[8px] py-[6px] text-[12px] leading-[1.5] hover:brightness-95 ${focusRing}`}
                     >
                       <FilePdf size={14} />
                       Preview PDF
