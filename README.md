@@ -162,9 +162,16 @@ Secrets (`npx wrangler secret put <NAME>`; locally in `.dev.vars`):
 ## Admin: Badges
 
 Print badges for every registration in the Airtable **Registrations** table
-(synced from Bizzabo). Each badge is a one-page **PDF** for the print vendor:
-3.5″ × 5.5″ trim plus bleed with crop marks (a 267.12 × 414 pt page), with
-vector text and QR. It's saved to the record's **Badge** field as
+(synced from Bizzabo). Each badge is a one-page **PDF** for the print vendor,
+with vector text and QR. The page is 4.08″ × 6.08″, made up of:
+
+- **Trim:** 3.5″ × 5.5″, the cut badge.
+- **Bleed:** 0.125″ on each side, so the artwork is 3.75″ × 5.75″.
+- **Slug:** 0.165″ of white on each side, holding the crop marks. The marks sit
+  on the trim lines and stop at the bleed edge.
+
+The PDF's TrimBox and BleedBox are set for prepress. Geometry constants live in
+[`shared/badges.ts`](shared/badges.ts). It's saved to the record's **Badge** field as
 `LastName_FirstName_RegistrationID.pdf`, with a standalone QR PNG (2″, 600 px,
 300 DPI) in **QR Code** as `…_QR.png`. The QR encodes the
 record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own tickets.
@@ -172,7 +179,7 @@ record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own ti
 - **Template:** [`src/badges/BadgeCard.tsx`](src/badges/BadgeCard.tsx), with one style per
   *Badge Type* in [`styles.ts`](src/badges/styles.ts). The Figma frames are in
   "Badge Designs" (node 12525-24140). The blurred glow backgrounds are
-  pre-rendered PNGs (`src/assets/badges/bg-*.png`). *Preferred Name* replaces
+  pre-rendered PNGs (`src/assets/badges/bg-*.png`, stretched about 1% to cover the bleed; their baked-in crop marks were painted out). *Preferred Name* replaces
   *First Name*. Long names shrink to fit, and companies wrap to two lines and then shrink.
 - **Rendering:** the Worker opens [`badge-render.html`](badge-render.html) in
   Cloudflare Browser Rendering (the `BROWSER` binding) and screenshots the same

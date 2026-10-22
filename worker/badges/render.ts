@@ -1,9 +1,10 @@
 import puppeteer, { type Browser, type Page } from '@cloudflare/puppeteer';
 import { BADGE_DPI, BADGE_SCALE, QR_CLIP, type BadgeData } from '../../shared/badges';
+import { setPrintBoxes } from './pdfBoxes';
 import { setPngDpi } from './png';
 
 export interface RenderedBadge {
-  /** One-page print PDF: trim + bleed with crop marks, vector text and QR. */
+  /** One-page print PDF: 4.08" × 6.08" page (trim + bleed + slug with crop marks), vector text and QR. */
   pdf: Uint8Array;
   /** Standalone QR PNG at 300 DPI. */
   qr: Uint8Array;
@@ -34,10 +35,10 @@ async function openBrowser(env: Env): Promise<Browser> {
 /**
  * The badge is laid out 1 CSS px = 1 pt (as in Figma), but Chrome prints 96 CSS
  * px per inch, so print at scale 4/3. The page is the @page size in
- * badge-render.html — exactly the Figma frame in points (BADGE_WIDTH × BADGE_HEIGHT).
+ * badge-render.html (PAGE_WIDTH × PAGE_HEIGHT); TrimBox/BleedBox are added after.
  */
 const printPdf = async (page: Page, pageRanges?: string) =>
-  new Uint8Array(
+  setPrintBoxes(
     await page.pdf({
       // Page size comes from badge-render.html's @page rule; width/height options get rounded by Chrome.
       preferCSSPageSize: true,

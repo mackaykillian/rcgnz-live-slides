@@ -23,17 +23,26 @@ export const isBadgeType = (value: unknown): value is BadgeType =>
  * Bump whenever the badge template changes visually. Every badge rendered with
  * an older version counts as out of date and is regenerated automatically.
  */
-export const BADGE_TEMPLATE_VERSION = 3; // 2: PDF + LastName_FirstName_ID names; 3: no lanyard-slot marker
+export const BADGE_TEMPLATE_VERSION = 4; // 2: PDF + LastName_FirstName_ID names; 3: no lanyard-slot marker; 4: trim/bleed/slug page
 
 /**
- * Print geometry. The Figma frame is in points (1/72"): trim plus bleed, with
- * crop marks drawn in the bleed. The badge PDF page is exactly this size; the
- * QR PNG is rendered at 300 DPI.
+ * Print geometry, in points (1/72"). The design is laid out 1 CSS px = 1 pt.
+ *   Trim  — the finished, cut badge: 3.5" × 5.5".
+ *   Bleed — artwork extends 0.125" past the trim on every side (cut off; forgives misalignment).
+ *   Slug  — white margin 0.165" outside the bleed, holding the crop marks.
+ * PDF page = trim + 2 × bleed + 2 × slug = 4.08" × 6.08".
  */
-export const BADGE_WIDTH = 267.12;
-export const BADGE_HEIGHT = 414;
+const INCH = 72;
+export const TRIM_WIDTH = 3.5 * INCH; // 252
+export const TRIM_HEIGHT = 5.5 * INCH; // 396
+export const BLEED = 0.125 * INCH; // 9
+export const SLUG = 0.165 * INCH; // 11.88
+export const BLEED_WIDTH = TRIM_WIDTH + 2 * BLEED; // 270
+export const BLEED_HEIGHT = TRIM_HEIGHT + 2 * BLEED; // 414
+export const PAGE_WIDTH = BLEED_WIDTH + 2 * SLUG; // 293.76
+export const PAGE_HEIGHT = BLEED_HEIGHT + 2 * SLUG; // 437.76
 export const BADGE_DPI = 300;
-export const BADGE_SCALE = BADGE_DPI / 72;
+export const BADGE_SCALE = BADGE_DPI / INCH;
 
 /** Standalone QR PNG for the "QR Code" column: 2" square at 300 DPI. */
 export const QR_SIZE = 144;
@@ -42,7 +51,7 @@ export const QR_SIZE = 144;
 export const MAX_BADGES_PER_BATCH = 100;
 
 /** Where the render page (badge-render.html) lays out the QR for the Worker to screenshot. */
-export const QR_CLIP = { x: Math.ceil(BADGE_WIDTH) + 20, y: 0, width: QR_SIZE, height: QR_SIZE };
+export const QR_CLIP = { x: Math.ceil(PAGE_WIDTH) + 20, y: 0, width: QR_SIZE, height: QR_SIZE };
 
 /** Everything printed on a badge. */
 export interface BadgeData {

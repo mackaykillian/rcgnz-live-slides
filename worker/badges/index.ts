@@ -136,21 +136,26 @@ export async function handleGenerateBadges(request: Request, env: Env): Promise<
 export async function handlePreviewBadge(request: Request, env: Env, recordId: string): Promise<Response> {
   const denied = checkAdmin(request, env);
   if (denied) return denied;
-  const [row] = await readRegistrations(env, [recordId]);
-  if (!row) return json({ ok: false, error: 'Registration not found' }, 404);
-  if (!row.data) return json({ ok: false, error: row.invalidReason }, 422);
+  try {
+    const [row] = await readRegistrations(env, [recordId]);
+    if (!row) return json({ ok: false, error: 'Registration not found' }, 404);
+    if (!row.data) return json({ ok: false, error: row.invalidReason }, 422);
 
-  const url = new URL(request.url);
-  const files = await withBadgeRenderer(env, url.origin, (render) => render.badge(row.data!));
-  const qr = url.searchParams.get('part') === 'qr';
-  const names = badgeFileNames(row);
-  return new Response(qr ? files.qr : files.pdf, {
-    headers: {
-      'Content-Type': qr ? 'image/png' : 'application/pdf',
-      'Content-Disposition': `inline; filename="${qr ? names.qr : names.badge}"`,
-      'Cache-Control': 'no-store',
-    },
-  });
+    const url = new URL(request.url);
+    const files = await withBadgeRenderer(env, url.origin, (render) => render.badge(row.data!));
+    const qr = url.searchParams.get('part') === 'qr';
+    const names = badgeFileNames(row);
+    return new Response(qr ? files.qr : files.pdf, {
+      headers: {
+        'Content-Type': qr ? 'image/png' : 'application/pdf',
+        'Content-Disposition': `inline; filename="${qr ? names.qr : names.badge}"`,
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (err) {
+    console.error('Badge preview failed', err);
+    return json({ ok: false, error: (err as Error).message }, 502);
+  }
 }
 
 /**

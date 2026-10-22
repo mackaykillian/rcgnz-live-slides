@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowsClockwise, CardsThree, DownloadSimple, FilePdf, MagnifyingGlass, Stack, Warning, X } from '@phosphor-icons/react';
-import { BADGE_TYPES, MAX_BADGES_PER_BATCH, type BadgeRegistration, type BadgeStatus } from '../../shared/badges';
+import { BADGE_TYPES, MAX_BADGES_PER_BATCH, PAGE_HEIGHT, PAGE_WIDTH, type BadgeRegistration, type BadgeStatus } from '../../shared/badges';
 import { AdminAuthError, downloadBatchPdf, fetchBadges, generateBadges, previewBadgePdf } from '../data/admin';
 import { Dropdown } from '../ui/Filters';
 import type { ToastKind } from '../ui/Toast';
@@ -240,7 +240,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
     <div className="flex flex-col gap-[16px] pb-[72px]">
       <div className="flex flex-wrap items-center justify-between gap-[12px]">
         <p className="text-[12px] leading-[1.5] text-ink-muted">
-          Print PDFs (3.5″ × 5.5″ + bleed) are saved to each registration’s <b>Badge</b> field, with a QR PNG in <b>QR Code</b>.
+          Print PDFs (4.08″ × 6.08″: 3.5″ × 5.5″ trim, 0.125″ bleed, crop marks) are saved to each registration’s <b>Badge</b> field, with a QR PNG in <b>QR Code</b>.
           Pick a <b>Batch</b> to download it as one PDF for the printer.
           New registrations and changed details are generated automatically every 15 minutes.
         </p>
@@ -387,7 +387,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
       ) : shown.length === 0 ? (
         <p className="py-[48px] text-center text-[14px] text-ink-muted">No registrations match these filters.</p>
       ) : (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(267px,1fr))] gap-x-[24px] gap-y-[32px]">
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(294px,1fr))] gap-x-[24px] gap-y-[32px]">
           {shown.map((r) => {
             const busy = busyIds.has(r.recordId);
             const chip = STATUS_CHIP[r.status];
@@ -398,11 +398,14 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
                     <BadgeCard data={r.data} />
                   </div>
                 ) : (
-                  <div className="flex h-[414px] w-[267px] items-center justify-center bg-overlay-subtle p-[24px] text-center text-[12px] text-ink-muted">
+                  <div
+                    className="flex items-center justify-center bg-overlay-subtle p-[24px] text-center text-[12px] text-ink-muted"
+                    style={{ width: PAGE_WIDTH, height: PAGE_HEIGHT }}
+                  >
                     {r.reason}
                   </div>
                 )}
-                <div className="flex w-[267px] items-start justify-between gap-[8px]">
+                <div className="flex items-start justify-between gap-[8px]" style={{ width: PAGE_WIDTH }}>
                   <div className="min-w-0">
                     <p className="truncate text-[14px] leading-[1.4]">{fullName(r)}</p>
                     <p className="truncate text-[12px] leading-[1.4] text-ink-muted">
@@ -422,7 +425,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
                   </span>
                 </div>
                 {r.data && (
-                  <div className="flex w-[267px] gap-[8px]">
+                  <div className="flex gap-[8px]" style={{ width: PAGE_WIDTH }}>
                     <button
                       type="button"
                       disabled={busy || running}
