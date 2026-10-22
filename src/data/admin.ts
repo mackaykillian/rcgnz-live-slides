@@ -26,6 +26,11 @@ async function adminJson<T extends { ok: boolean; error?: string }>(passcode: st
   return body;
 }
 
+/** Resolves if the passcode unlocks admin tools; throws AdminAuthError if not. */
+export async function verifyAdminPasscode(passcode: string): Promise<void> {
+  await adminJson<{ ok: boolean; error?: string }>(passcode, '/api/admin/check');
+}
+
 /** Run Bizzabo → Airtable, then Airtable → slides. Resolves with the fresh snapshot. */
 export function fetchBizzabo(passcode: string): Promise<AdminResponse> {
   return adminJson<AdminResponse>(passcode, '/api/admin/bizzabo-fetch', { method: 'POST' });

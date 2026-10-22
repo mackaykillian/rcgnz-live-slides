@@ -1,5 +1,5 @@
 import type { SyncResponse } from '../shared/types';
-import { handleBizzaboFetch } from './admin';
+import { checkAdmin, handleBizzaboFetch } from './admin';
 import {
   generatePendingBadges,
   handleBatchPdf,
@@ -72,6 +72,7 @@ export default {
 
     if (pathname === '/api/snapshot' && request.method === 'GET') return handleSnapshot(env);
     if (pathname === '/api/sync' && request.method === 'POST') return handleSync(env);
+    if (pathname === '/api/admin/check' && request.method === 'GET') return checkAdmin(request, env) ?? json({ ok: true });
     if (pathname === '/api/admin/bizzabo-fetch' && request.method === 'POST') return handleBizzaboFetch(request, env);
     if (pathname === '/api/admin/badges' && request.method === 'GET') return handleListBadges(request, env);
     if (pathname === '/api/admin/badges/generate' && request.method === 'POST') return handleGenerateBadges(request, env);

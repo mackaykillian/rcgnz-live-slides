@@ -143,7 +143,14 @@ demand, in parallel:
 
 After that, it re-syncs this app from Airtable. New registrations get badges on
 the next 15-minute run. It goes through `POST /api/admin/bizzabo-fetch`,
-which requires the admin passcode. The browser asks for it once and remembers it.
+which requires the admin passcode.
+
+**Unlocking admin tools:** clicking a locked admin item (Fetch Bizzabo or
+Badges) opens a passcode field under the "Admin only" items in the sidebar.
+`GET /api/admin/check` verifies the passcode, then the action you clicked runs.
+The browser saves the passcode in localStorage and sends it as the
+`X-Admin-Passcode` header on each admin request. If it stops working, the field
+reopens with an error.
 The app reaches both workers through **service bindings** (`BIZZABO_SYNC` and
 `BIZZABO_TICKETS` in `wrangler.jsonc`), not their public URLs. Cloudflare blocks one Worker from
 fetching another's `workers.dev` URL on the same account (error 1042, which

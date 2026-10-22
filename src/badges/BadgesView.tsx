@@ -268,17 +268,11 @@ export function BadgesView({ passcode, onNeedPasscode, notify, headerSlot, botto
   };
 
   if (!passcode) {
+    // The passcode form opens in the sidebar (see App); Badges loads once it's accepted.
     return (
-      <div className="flex flex-col items-center gap-[12px] py-[48px] text-center">
-        <p className="text-[14px] text-ink-muted">Badges are admin only.</p>
-        <button
-          type="button"
-          onClick={() => onNeedPasscode(null)}
-          className={`rounded-[8px] bg-accent px-[12px] py-[8px] text-[14px] leading-[1.5] text-white hover:bg-[#1f5fe0] ${focusRing}`}
-        >
-          Enter admin passcode
-        </button>
-      </div>
+      <p className="py-[48px] text-center text-[14px] text-ink-muted">
+        Badges are admin only. Enter the admin passcode in the sidebar to unlock them.
+      </p>
     );
   }
 

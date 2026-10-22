@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { AdminAuthError, clearAdminPasscode, fetchBizzabo, getAdminPasscode, setAdminPasscode } from './data/admin';
+import { AdminAuthError, clearAdminPasscode, fetchBizzabo, getAdminPasscode, setAdminPasscode, verifyAdminPasscode } from './data/admin';
 import { useSnapshot } from './data/useSnapshot';
 import { BadgesView } from './badges/BadgesView';
 import { CalendarView } from './calendar/CalendarView';
@@ -15,7 +15,6 @@ import { Filters } from './ui/Filters';
 import { GalleryView } from './ui/GalleryView';
 import { ItemOverlay } from './ui/ItemOverlay';
 import { ListView } from './ui/ListView';
-import { PasscodeDialog } from './ui/PasscodeDialog';
 import { SelectionBar } from './ui/SelectionBar';
 import { Sidebar } from './ui/Sidebar';
 import { SortButton } from './ui/SortButton';
@@ -128,14 +127,25 @@ export default function App() {
     );
   };
 
-  // Admin only. `then` is what to do once a passcode is entered.
+  // Admin only. Clicking a locked admin item opens the passcode form in the
+  // sidebar; `then` is what that click was for, run once the passcode checks out.
+  type AdminAction = 'bizzabo' | 'badges';
   const [adminPasscode, setAdminPasscodeState] = useState(getAdminPasscode);
-  const [passcodePrompt, setPasscodePrompt] = useState<{ error: string | null; then: 'bizzabo' | 'badges' } | null>(null);
-  const forgetPasscode = useCallback((error: string | null, then: 'bizzabo' | 'badges') => {
-    clearAdminPasscode();
-    setAdminPasscodeState(null);
-    setPasscodePrompt({ error, then });
+  const [unlockPrompt, setUnlockPrompt] = useState<{ error: string | null; then: AdminAction | null } | null>(null);
+  const [unlockChecking, setUnlockChecking] = useState(false);
+  const askForPasscode = useCallback((then: AdminAction | null, error: string | null = null) => {
+    setSidebarCollapsed(false);
+    setUnlockPrompt({ error, then });
   }, []);
+  /** A saved passcode stopped working (e.g. it was changed) — drop it and ask again. */
+  const forgetPasscode = useCallback(
+    (error: string | null, then: AdminAction) => {
+      clearAdminPasscode();
+      setAdminPasscodeState(null);
+      askForPasscode(then, error);
+    },
+    [askForPasscode],
+  );
   const onBadgesNeedPasscode = useCallback((error: string | null) => forgetPasscode(error, 'badges'), [forgetPasscode]);
 
   // "Fetch Bizzabo": Bizzabo → Airtable (sessions + registrations), then Airtable → slides.
@@ -162,8 +172,31 @@ export default function App() {
   const onFetchBizzabo = () => {
     const saved = getAdminPasscode();
     if (saved) void runBizzaboFetch(saved);
-    else setPasscodePrompt({ error: null, then: 'bizzabo' });
+    else askForPasscode('bizzabo');
   };
+
+  const onUnlock = async (passcode: string) => {
+    setUnlockChecking(true);
+    try {
+      await verifyAdminPasscode(passcode);
+      setAdminPasscode(passcode);
+      setAdminPasscodeState(passcode);
+      const then = unlockPrompt?.then ?? (route.section === 'badges' ? 'badges' : null);
+      setUnlockPrompt(null);
+      if (then === 'bizzabo') void runBizzaboFetch(passcode);
+      if (then === 'badges') navigate({ section: 'badges' });
+    } catch (err) {
+      setUnlockPrompt((p) => ({
+        then: p?.then ?? null,
+        error: err instanceof AdminAuthError ? 'Incorrect passcode. Try again.' : `Couldn’t check the passcode: ${(err as Error).message}`,
+      }));
+    } finally {
+      setUnlockChecking(false);
+    }
+  };
+
+  // Opening #/badges directly while locked shows the form too.
+  const unlockShown = unlockPrompt ?? (route.section === 'badges' && !adminPasscode ? { error: null, then: 'badges' as const } : null);
 
   const onSync = async () => {
     const ok = await sync();
@@ -199,6 +232,11 @@ export default function App() {
           onCollapse={() => setSidebarCollapsed(true)}
           bizzaboRunning={bizzaboRunning}
           onFetchBizzabo={onFetchBizzabo}
+          adminUnlocked={!!adminPasscode}
+          unlock={unlockShown && { error: unlockShown.error, checking: unlockChecking }}
+          onUnlock={(passcode) => void onUnlock(passcode)}
+          onCancelUnlock={() => setUnlockPrompt(null)}
+          onRequestBadges={() => askForPasscode('badges')}
         />
       )}
 
@@ -304,19 +342,6 @@ export default function App() {
           )}
         </div>
       </main>
-
-      {passcodePrompt && (
-        <PasscodeDialog
-          error={passcodePrompt.error}
-          onCancel={() => setPasscodePrompt(null)}
-          onSubmit={(passcode) => {
-            setAdminPasscode(passcode);
-            setAdminPasscodeState(passcode);
-            setPasscodePrompt(null);
-            if (passcodePrompt.then === 'bizzabo') void runBizzaboFetch(passcode);
-          }}
-        />
-      )}
 
       {openItem && (
         <ItemOverlay

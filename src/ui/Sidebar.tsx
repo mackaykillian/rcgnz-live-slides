@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import {
   ArrowsClockwise,
   ArrowUpRight,
@@ -8,6 +8,7 @@ import {
   Cloud,
   FigmaLogo,
   IdentificationBadge,
+  LockSimpleOpen,
   ImageSquare,
   ImagesSquare,
   MapPin,
@@ -31,6 +32,70 @@ interface Props {
   onCollapse: () => void;
   bizzaboRunning: boolean;
   onFetchBizzabo: () => void;
+  /** Admin tools are unlocked (a verified passcode is saved). */
+  adminUnlocked: boolean;
+  /** Show the passcode form (an admin item was clicked while locked). */
+  unlock: AdminUnlockState | null;
+  onUnlock: (passcode: string) => void;
+  onCancelUnlock: () => void;
+  /** Badges was clicked while locked. */
+  onRequestBadges: () => void;
+}
+
+export interface AdminUnlockState {
+  error: string | null;
+  checking: boolean;
+}
+
+/** Inline passcode form under the "Admin only" items (Figma "Admin section"). */
+function AdminUnlockForm({ state, onUnlock, onCancel }: { state: AdminUnlockState; onUnlock: (p: string) => void; onCancel: () => void }) {
+  const [value, setValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus when it opens, and re-select after a wrong passcode so it can be retyped.
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.form?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (state.error) inputRef.current?.select();
+  }, [state.error]);
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (value.trim() && !state.checking) onUnlock(value.trim());
+  };
+
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-[8px]" aria-label="Unlock admin tools">
+      <input
+        ref={inputRef}
+        type="password"
+        autoComplete="current-password"
+        aria-label="Admin passcode"
+        placeholder="Enter admin passcode"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => e.key === 'Escape' && onCancel()}
+        aria-invalid={!!state.error}
+        aria-describedby={state.error ? 'admin-passcode-error' : undefined}
+        className={`w-full rounded-[8px] bg-white p-[8px] text-[12px] leading-[21px] text-ink outline-none placeholder:text-ink/45 focus:ring-2 ${
+          state.error ? 'ring-2 ring-[#e5484d]/60 focus:ring-[#e5484d]/60' : 'focus:ring-accent/40'
+        }`}
+      />
+      {state.error && (
+        <p id="admin-passcode-error" role="alert" className="-mt-[2px] text-[12px] leading-[1.4] text-[#c4321f]">
+          {state.error}
+        </p>
+      )}
+      <button
+        type="submit"
+        disabled={!value.trim() || state.checking}
+        className={`flex w-full items-center justify-center gap-[6px] rounded-[8px] bg-accent p-[8px] text-[12px] leading-[18px] text-white hover:bg-[#1f5fe0] disabled:opacity-50 disabled:hover:bg-accent ${focusRing} focus-visible:ring-white/70`}
+      >
+        <LockSimpleOpen size={16} />
+        {state.checking ? 'Checking…' : 'Unlock admin tools'}
+      </button>
+    </form>
+  );
 }
 
 type Highlight = 'accent' | 'neutral' | 'none';
@@ -107,7 +172,21 @@ function ExternalItem(props: { href: string; icon: ReactNode; label: string }) {
   );
 }
 
-export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse, bizzaboRunning, onFetchBizzabo }: Props) {
+export function Sidebar({
+  route,
+  syncedAt,
+  isMock,
+  syncing,
+  onSync,
+  onCollapse,
+  bizzaboRunning,
+  onFetchBizzabo,
+  adminUnlocked,
+  unlock,
+  onUnlock,
+  onCancelUnlock,
+  onRequestBadges,
+}: Props) {
   const [slidesOpen, setSlidesOpen] = useState(true);
   const [showOpen, setShowOpen] = useState(true);
 
@@ -223,12 +302,24 @@ export function Sidebar({ route, syncedAt, isMock, syncing, onSync, onCollapse, 
             </button>
             <a
               href={routeHref({ section: 'badges' })}
+              onClick={(e: MouseEvent) => {
+                // Locked: ask for the passcode first; Badges opens once it's accepted.
+                if (!adminUnlocked) {
+                  e.preventDefault();
+                  onRequestBadges();
+                }
+              }}
               aria-current={route.section === 'badges' ? 'page' : undefined}
               className={`flex w-full items-center gap-[6px] rounded-[6px] px-[8px] py-[7px] text-[14px] leading-[18px] ${focusRing} ${highlightClass[route.section === 'badges' ? 'accent' : 'none']}`}
             >
               <IdentificationBadge size={16} className="shrink-0" />
               Badges
             </a>
+            {unlock && (
+              <div className="mt-[20px]">
+                <AdminUnlockForm state={unlock} onUnlock={onUnlock} onCancel={onCancelUnlock} />
+              </div>
+            )}
           </div>
         </div>
 
