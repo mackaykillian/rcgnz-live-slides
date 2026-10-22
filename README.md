@@ -204,8 +204,8 @@ record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own ti
 - **Badge Generated At:** every upload stamps this Registrations date/time field.
   The Badges page shows it on each card.
 - **Admin page:** go to **Admin only → Badges** (`#/badges`, passcode required). It shows
-  every registration rendered live, with its status. *Generate pending* and
-  *Regenerate all* run in batches of 10. Each card has **Generate/Regenerate**
+  every registration rendered live, with its status. The **Generate** menu (*Generate pending*,
+  *Regenerate All*) runs in batches of 10. Each card has **Generate/Regenerate**
   and **Preview PDF**, which renders the print file without uploading it.
   Deleting a record's Badge in Airtable also queues it for the next cron run.
 

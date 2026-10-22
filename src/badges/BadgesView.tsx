@@ -7,6 +7,7 @@ import { Dropdown } from '../ui/Filters';
 import { SelectionBar } from '../ui/SelectionBar';
 import type { ToastKind } from '../ui/Toast';
 import { BadgeCard } from './BadgeCard';
+import { GenerateMenu } from './GenerateMenu';
 
 /** Matches MAX_BATCH in worker/badges/index.ts. */
 const BATCH_SIZE = 10;
@@ -308,29 +309,16 @@ export function BadgesView({ passcode, onNeedPasscode, notify, headerSlot, botto
           </button>
         </>
       ) : (
-        <>
-          <button
-            type="button"
-            disabled={selecting || !pendingIds.length}
-            onClick={() => void run(pendingIds)}
-            className={`${headerButton} bg-accent text-white hover:bg-[#1f5fe0] disabled:hover:bg-accent`}
-          >
-            <ArrowsClockwise size={16} />
-            Generate pending{pendingIds.length ? ` (${pendingIds.length})` : ''}
-          </button>
-          <button
-            type="button"
-            disabled={selecting || !validIds.length}
-            onClick={() => {
-              if (window.confirm(`Regenerate all ${validIds.length} badges? This replaces every Badge and QR Code file in Airtable.`)) {
-                void run(validIds);
-              }
-            }}
-            className={`${headerButton} bg-white text-ink hover:bg-white/70 disabled:hover:bg-white`}
-          >
-            Regenerate all
-          </button>
-        </>
+        <GenerateMenu
+          disabled={selecting}
+          pendingCount={pendingIds.length}
+          onGeneratePending={() => void run(pendingIds)}
+          onRegenerateAll={() => {
+            if (window.confirm(`Regenerate all ${validIds.length} badges? This replaces every Badge and QR Code file in Airtable.`)) {
+              void run(validIds);
+            }
+          }}
+        />
       )}
     </>
   );
