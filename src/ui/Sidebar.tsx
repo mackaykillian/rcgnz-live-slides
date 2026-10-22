@@ -208,7 +208,9 @@ export function Sidebar({
         </button>
       </div>
 
-      <div className="mt-[24px] flex flex-1 flex-col justify-between overflow-y-auto [scrollbar-width:thin]">
+      {/* Scroll area reaches 4px into the sidebar padding (and pads back in), so focus
+          rings on full-width items like the passcode field aren't clipped at the sides. */}
+      <div className="-mx-[4px] mt-[24px] flex flex-1 flex-col justify-between overflow-y-auto px-[4px] [scrollbar-width:thin]">
         <div className="flex flex-col gap-[24px]">
           <div className="flex flex-col gap-[8px]">
             <button
