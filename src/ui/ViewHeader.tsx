@@ -13,9 +13,11 @@ interface Props {
   onToggleSelect: () => void;
   sidebarCollapsed: boolean;
   onExpandSidebar: () => void;
+  /** Container a view portals its own header buttons into (e.g. Badges). */
+  setActionsSlot?: (el: HTMLDivElement | null) => void;
 }
 
-export function ViewHeader(props: Props) {
+export function ViewHeader({ setActionsSlot, ...props }: Props) {
   const toggleItem = (mode: ViewMode, label: string, Icon: typeof List) => {
     const active = props.viewMode === mode;
     return (
@@ -51,6 +53,9 @@ export function ViewHeader(props: Props) {
           </Fragment>
         ))}
       </div>
+
+      {/* Empty unless a view portals buttons into it. */}
+      <div ref={setActionsSlot} className="flex items-center gap-[8px] empty:hidden" />
 
       {props.showControls && (
         <div className="flex items-center gap-[8px]">

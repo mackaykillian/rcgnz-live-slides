@@ -33,6 +33,9 @@ export default function App() {
   const [route, navigate] = useRoute();
   const [viewMode, setViewMode] = useLocalStorage<ViewMode>('rcgnz:viewMode', 'gallery', VIEW_MODES);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Slots the Badges view portals its header buttons and selection pill into.
+  const [headerSlot, setHeaderSlot] = useState<HTMLDivElement | null>(null);
+  const [bottomSlot, setBottomSlot] = useState<HTMLDivElement | null>(null);
 
   const [search, setSearch] = useState('');
   const [day, setDay] = useState<string | null>(null);
@@ -209,6 +212,7 @@ export default function App() {
           onToggleSelect={() => (selecting ? exitSelecting() : setSelecting(true))}
           sidebarCollapsed={sidebarCollapsed}
           onExpandSidebar={() => setSidebarCollapsed(false)}
+          setActionsSlot={route.section === 'badges' ? setHeaderSlot : undefined}
         />
 
         <section
@@ -225,7 +229,13 @@ export default function App() {
           }`}
         >
           {route.section === 'badges' ? (
-            <BadgesView passcode={adminPasscode} onNeedPasscode={onBadgesNeedPasscode} notify={show} />
+            <BadgesView
+              passcode={adminPasscode}
+              onNeedPasscode={onBadgesNeedPasscode}
+              notify={show}
+              headerSlot={headerSlot}
+              bottomSlot={bottomSlot}
+            />
           ) : route.section === 'calendar' ? (
             snapshot ? (
               <CalendarView
@@ -288,6 +298,7 @@ export default function App() {
 
         <div className="pointer-events-none absolute inset-x-0 bottom-[40px] flex flex-col items-center gap-[12px]">
           <Toast toast={toast} />
+          <div ref={setBottomSlot} className="contents" />
           {selecting && route.section === 'slides' && (
             <SelectionBar count={selected.size} busy={exporting} onDownload={downloadSelected} onClose={exitSelecting} />
           )}

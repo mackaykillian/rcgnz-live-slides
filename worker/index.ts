@@ -1,6 +1,13 @@
 import type { SyncResponse } from '../shared/types';
 import { handleBizzaboFetch } from './admin';
-import { generatePendingBadges, handleBatchPdf, handleGenerateBadges, handleListBadges, handlePreviewBadge } from './badges';
+import {
+  generatePendingBadges,
+  handleBatchPdf,
+  handleGenerateBadges,
+  handleListBadges,
+  handlePreviewBadge,
+  handleSelectionPdf,
+} from './badges';
 import { readImageSources, readSnapshot, syncFromAirtable } from './sync';
 
 const json = (body: unknown, init: ResponseInit = {}) =>
@@ -68,6 +75,7 @@ export default {
     if (pathname === '/api/admin/bizzabo-fetch' && request.method === 'POST') return handleBizzaboFetch(request, env);
     if (pathname === '/api/admin/badges' && request.method === 'GET') return handleListBadges(request, env);
     if (pathname === '/api/admin/badges/generate' && request.method === 'POST') return handleGenerateBadges(request, env);
+    if (pathname === '/api/admin/badges/pdf' && request.method === 'POST') return handleSelectionPdf(request, env);
 
     const preview = pathname.match(/^\/api\/admin\/badges\/(rec\w+)\/preview$/);
     if (preview && request.method === 'GET') return handlePreviewBadge(request, env, preview[1]!);

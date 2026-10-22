@@ -60,7 +60,16 @@ export function previewBadgePdf(passcode: string, recordId: string): Promise<Blo
   return adminBlob(passcode, `/api/admin/badges/${recordId}/preview`);
 }
 
-/** One Airtable Batch as a single PDF (a page per badge) for the printer. */
-export function downloadBatchPdf(passcode: string, batch: string): Promise<Blob> {
-  return adminBlob(passcode, `/api/admin/badges/batches/${encodeURIComponent(batch)}`);
+/** Selected badges as one PDF (a page each, sorted by last name, at most 100) for the printer. */
+export async function downloadBadgesPdf(passcode: string, recordIds: string[], label: string): Promise<Blob> {
+  const res = await adminFetch(passcode, '/api/admin/badges/pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recordIds, label }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? `Request failed (${res.status})`);
+  }
+  return res.blob();
 }

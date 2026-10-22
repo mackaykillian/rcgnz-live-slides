@@ -192,11 +192,15 @@ record's *QR Code Link* (the Bizzabo attendee URL), the same as Bizzabo's own ti
   25 pending badges. **Bump `BADGE_TEMPLATE_VERSION`** in
   [`shared/badges.ts`](shared/badges.ts) after changing the template, so every
   badge regenerates.
-- **Printer batches:** the Registrations **Batch** select (B1, B2…) groups badges
-  for the vendor, at most 100 per batch. Pick a batch on the Badges page and
-  click **Download batch PDF**. It gives one PDF with a badge per page, sorted
-  by last name (`GET /api/admin/badges/batches/:batch`), and refuses batches
-  over 100.
+- **Printer PDFs:** click **Select** on the Badges page, pick badges, and choose
+  **Download as PDF**. You get one PDF with a badge per page, sorted by last
+  name, at most 100 (`POST /api/admin/badges/pdf`).
+  - The selection survives filter changes.
+  - **Select all N** adds everything the filters show, so "all of Batch 1" is
+    the Batch filter plus Select all. The Registrations **Batch** select groups
+    badges for the vendor.
+  - A selection that's exactly one batch is named `RCGNZ-Badges_Batch1_N.pdf`.
+  - `GET /api/admin/badges/batches/:batch` still returns a whole batch.
 - **Badge Generated At:** every upload stamps this Registrations date/time field.
   The Badges page shows it on each card.
 - **Admin page:** go to **Admin only → Badges** (`#/badges`, passcode required). It shows

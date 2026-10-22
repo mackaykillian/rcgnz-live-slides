@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowsClockwise, CardsThree, DownloadSimple, FilePdf, MagnifyingGlass, Stack, Warning, X } from '@phosphor-icons/react';
+import { createPortal } from 'react-dom';
+import { ArrowsClockwise, CardsThree, CheckCircle, FilePdf, MagnifyingGlass, Stack, Warning, X } from '@phosphor-icons/react';
 import { BADGE_TYPES, MAX_BADGES_PER_BATCH, PAGE_HEIGHT, PAGE_WIDTH, type BadgeRegistration, type BadgeStatus } from '../../shared/badges';
-import { AdminAuthError, downloadBatchPdf, fetchBadges, generateBadges, previewBadgePdf } from '../data/admin';
+import { AdminAuthError, downloadBadgesPdf, fetchBadges, generateBadges, previewBadgePdf } from '../data/admin';
 import { Dropdown } from '../ui/Filters';
+import { SelectionBar } from '../ui/SelectionBar';
 import type { ToastKind } from '../ui/Toast';
 import { BadgeCard } from './BadgeCard';
 
@@ -23,6 +25,8 @@ const STATUS_CHIP: Record<BadgeStatus, { label: string; background: string }> = 
 };
 
 const focusRing = 'outline-none focus-visible:ring-2 focus-visible:ring-accent';
+/** Header buttons — same look as the Slides "Select" button. */
+const headerButton = `flex items-center gap-[6px] rounded-[8px] px-[12px] py-[8px] text-[14px] leading-[1.5] disabled:opacity-50 ${focusRing}`;
 
 /** Batch filter value for registrations without a Batch in Airtable. */
 const NO_BATCH = '__none';
@@ -40,19 +44,29 @@ const generatedFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 
 
 const fullName = (r: BadgeRegistration) => (r.data ? `${r.data.firstName} ${r.data.lastName}`.trim() : `Registration ${r.registrationId ?? r.recordId}`);
 
+const sameSet = (a: Set<string>, b: string[]) => a.size === b.length && b.every((id) => a.has(id));
+
 interface Props {
   passcode: string | null;
   /** Ask for the admin passcode (again, with `error` after a rejected one). */
   onNeedPasscode: (error: string | null) => void;
   notify: (kind: ToastKind, message: string) => void;
+  /** Where to render the header buttons (next to the "Badges" title). */
+  headerSlot: HTMLElement | null;
+  /** Where to render the selection pill (bottom of the view). */
+  bottomSlot: HTMLElement | null;
 }
 
 /**
  * Admin-only badge console: every registration rendered with the live badge
- * template, its status in Airtable, and actions to (re)generate the print PNGs.
+ * template, its status in Airtable, and actions to (re)generate the print PDFs.
  * New registrations and changed details are also handled by the 15-minute cron.
+ *
+ * Select mode builds one printer PDF: the selection survives filter changes, and
+ * "Select all" adds whatever the filters show — so "all of Batch 1" is the Batch
+ * filter + Select all.
  */
-export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
+export function BadgesView({ passcode, onNeedPasscode, notify, headerSlot, bottomSlot }: Props) {
   const [registrations, setRegistrations] = useState<BadgeRegistration[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -63,8 +77,11 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
   const [batch, setBatch] = useState('');
-  const [downloading, setDownloading] = useState(false);
   const [status, setStatus] = useState<BadgeStatus | 'all'>('all');
+
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [downloading, setDownloading] = useState(false);
 
   const handleError = useCallback(
     (err: unknown) => {
@@ -167,24 +184,10 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
     }
   };
 
-  const downloadBatch = async (name: string, count: number) => {
-    if (!passcode) return;
-    setDownloading(true);
-    notify('busy', `Rendering batch ${name} — ${count} badge${count === 1 ? '' : 's'}…`);
-    try {
-      saveBlob(await downloadBatchPdf(passcode, name), `RCGNZ-Badges_${name}_${count}.pdf`);
-      notify('success', `Downloaded batch ${name}`);
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   /** Printable badges per Batch (registrations with problems aren't printed). */
   const batches = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const r of registrations ?? []) if (r.batch && r.data) m.set(r.batch, (m.get(r.batch) ?? 0) + 1);
+    const m = new Map<string, string[]>();
+    for (const r of registrations ?? []) if (r.batch && r.data) m.set(r.batch, [...(m.get(r.batch) ?? []), r.recordId]);
     return [...m].sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
   }, [registrations]);
   const unbatched = (registrations ?? []).filter((r) => !r.batch).length;
@@ -216,6 +219,53 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
       );
   }, [registrations, search, type, batch, status]);
 
+  // ---- Selection ------------------------------------------------------------
+
+  /** Only printable badges can be selected. */
+  const selectableShown = useMemo(() => shown.filter((r) => r.data).map((r) => r.recordId), [shown]);
+  const allShownSelected = selectableShown.length > 0 && selectableShown.every((id) => selected.has(id));
+
+  const toggle = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const toggleAllShown = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const id of selectableShown) {
+        if (allShownSelected) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+
+  const exitSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
+
+  /** "Batch 1" when the selection is exactly one batch; otherwise "Selection". */
+  const selectionLabel = batches.find(([, ids]) => sameSet(selected, ids))?.[0] ?? 'Selection';
+
+  const downloadSelected = async () => {
+    if (!passcode || !selected.size) return;
+    setDownloading(true);
+    notify('busy', `Rendering ${selected.size} badge${selected.size === 1 ? '' : 's'}…`);
+    try {
+      const blob = await downloadBadgesPdf(passcode, [...selected], selectionLabel);
+      saveBlob(blob, `RCGNZ-Badges_${selectionLabel.replace(/[^\p{L}\p{N}]+/gu, '') || 'Selection'}_${selected.size}.pdf`);
+      notify('success', `Downloaded ${selected.size} badge${selected.size === 1 ? '' : 's'}`);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (!passcode) {
     return (
       <div className="flex flex-col items-center gap-[12px] py-[48px] text-center">
@@ -236,55 +286,82 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
   const validIds = (registrations ?? []).filter((r) => r.data).map((r) => r.recordId);
   const problems = (registrations ?? []).filter((r) => r.status === 'invalid');
 
-  return (
-    <div className="flex flex-col gap-[16px] pb-[72px]">
-      <div className="flex flex-wrap items-center justify-between gap-[12px]">
-        <p className="text-[12px] leading-[1.5] text-ink-muted">
-          Print PDFs (4.08″ × 6.08″: 3.5″ × 5.5″ trim, 0.125″ bleed, crop marks) are saved to each registration’s <b>Badge</b> field, with a QR PNG in <b>QR Code</b>.
-          Pick a <b>Batch</b> to download it as one PDF for the printer.
-          New registrations and changed details are generated automatically every 15 minutes.
-        </p>
-        <div className="flex items-center gap-[8px]">
-          {running ? (
-            <>
-              <span className="text-[12px] text-ink-muted" role="status">
-                Generating {progress.done} / {progress.total}…
-              </span>
-              <button
-                type="button"
-                onClick={() => (stopRef.current = true)}
-                className={`rounded-[8px] bg-overlay-subtle px-[12px] py-[8px] text-[14px] leading-[1.5] hover:brightness-95 ${focusRing}`}
-              >
-                Stop
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                disabled={!validIds.length}
-                onClick={() => {
-                  if (window.confirm(`Regenerate all ${validIds.length} badges? This replaces every Badge and QR Code file in Airtable.`)) {
-                    void run(validIds);
-                  }
-                }}
-                className={`rounded-[8px] bg-overlay-subtle px-[12px] py-[8px] text-[14px] leading-[1.5] hover:brightness-95 disabled:opacity-50 ${focusRing}`}
-              >
-                Regenerate all
-              </button>
-              <button
-                type="button"
-                disabled={!pendingIds.length}
-                onClick={() => void run(pendingIds)}
-                className={`flex items-center gap-[6px] rounded-[8px] bg-accent px-[12px] py-[8px] text-[14px] leading-[1.5] text-white hover:bg-[#1f5fe0] disabled:opacity-50 ${focusRing}`}
-              >
-                <ArrowsClockwise size={16} />
-                Generate {pendingIds.length || ''} pending
-              </button>
-            </>
-          )}
-        </div>
+  const headerActions = (
+    <>
+      <button
+        type="button"
+        onClick={() => (selecting ? exitSelecting() : setSelecting(true))}
+        aria-pressed={selecting}
+        disabled={running}
+        className={`${headerButton} ${selecting ? 'bg-accent text-white' : 'bg-white text-ink hover:bg-white/70'}`}
+      >
+        <CheckCircle size={16} />
+        Select
+      </button>
+      {running ? (
+        <>
+          <span className="px-[4px] text-[14px] text-ink-muted" role="status">
+            Generating {progress.done} / {progress.total}…
+          </span>
+          <button type="button" onClick={() => (stopRef.current = true)} className={`${headerButton} bg-white text-ink hover:bg-white/70`}>
+            Stop
+          </button>
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            disabled={selecting || !pendingIds.length}
+            onClick={() => void run(pendingIds)}
+            className={`${headerButton} bg-accent text-white hover:bg-[#1f5fe0] disabled:hover:bg-accent`}
+          >
+            <ArrowsClockwise size={16} />
+            Generate pending{pendingIds.length ? ` (${pendingIds.length})` : ''}
+          </button>
+          <button
+            type="button"
+            disabled={selecting || !validIds.length}
+            onClick={() => {
+              if (window.confirm(`Regenerate all ${validIds.length} badges? This replaces every Badge and QR Code file in Airtable.`)) {
+                void run(validIds);
+              }
+            }}
+            className={`${headerButton} bg-white text-ink hover:bg-white/70 disabled:hover:bg-white`}
+          >
+            Regenerate all
+          </button>
+        </>
+      )}
+    </>
+  );
+
+  const overLimit = selected.size > MAX_BADGES_PER_BATCH;
+  const selectionBar = selecting && (
+    <SelectionBar
+      count={selected.size}
+      busy={downloading}
+      onDownload={() => void downloadSelected()}
+      onClose={exitSelecting}
+      downloadLabel="Download as PDF"
+      blockedReason={overLimit ? `Printer limit is ${MAX_BADGES_PER_BATCH}` : null}
+    >
+      <div className="flex items-center gap-[16px] text-[12px] leading-[1.5] whitespace-nowrap text-white">
+        <button type="button" onClick={toggleAllShown} disabled={!selectableShown.length} className="hover:text-white/70 disabled:opacity-50">
+          {allShownSelected ? `Deselect ${selectableShown.length} shown` : `Select all ${selectableShown.length}`}
+        </button>
+        {selected.size > 0 && (
+          <button type="button" onClick={() => setSelected(new Set())} className="text-white/70 hover:text-white">
+            Clear
+          </button>
+        )}
       </div>
+    </SelectionBar>
+  );
+
+  return (
+    <div className="flex flex-col gap-[16px] pb-[96px]">
+      {headerSlot && createPortal(headerActions, headerSlot)}
+      {bottomSlot && selectionBar && createPortal(selectionBar, bottomSlot)}
 
       {running && (
         <div className="h-[4px] overflow-hidden rounded-full bg-overlay-subtle" aria-hidden>
@@ -292,22 +369,8 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
         </div>
       )}
 
-      {problems.length > 0 && (
-        <div role="status" className="flex items-start gap-[8px] rounded-[8px] bg-[#fbbf24]/15 px-[12px] py-[8px] text-[12px] leading-[1.5]">
-          <Warning size={16} weight="fill" className="mt-[1px] shrink-0 text-[#d97706]" />
-          <p className="min-w-0 [overflow-wrap:anywhere]">
-            {problems.length} registration{problems.length === 1 ? ' can’t get a badge' : 's can’t get badges'}:{' '}
-            {problems.map((r, i) => (
-              <span key={r.recordId}>
-                {i > 0 && ', '}#{r.registrationId ?? r.recordId} ({r.reason})
-              </span>
-            ))}
-          </p>
-        </div>
-      )}
-
       <div className="flex flex-wrap items-center gap-[8px]">
-        <label className="flex max-w-[480px] min-w-[200px] flex-1 items-center gap-[8px] rounded-[8px] bg-overlay-subtle px-[12px] py-[8px] focus-within:ring-2 focus-within:ring-accent/40">
+        <label className="flex max-w-[600px] min-w-[200px] flex-1 items-center gap-[8px] rounded-[8px] bg-overlay-subtle px-[12px] py-[8px] focus-within:ring-2 focus-within:ring-accent/40">
           <MagnifyingGlass size={16} className="shrink-0" />
           <input
             type="search"
@@ -334,51 +397,44 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
           label="Batch"
           value={batch}
           options={[
-            ...batches.map(([name, n]) => ({ value: name, label: `${name} (${n})` })),
+            ...batches.map(([name, ids]) => ({ value: name, label: `${name} (${ids.length})` })),
             { value: NO_BATCH, label: `No batch (${unbatched})` },
           ]}
           onChange={setBatch}
         />
-        <div role="tablist" aria-label="Badge status" className="flex gap-[4px]">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              role="tab"
-              aria-selected={status === tab.value}
-              onClick={() => setStatus(tab.value)}
-              className={`rounded-[6px] px-[10px] py-[6px] text-[14px] leading-[20px] ${focusRing} ${
-                status === tab.value ? 'bg-accent-soft text-accent' : 'text-ink-muted hover:bg-overlay-subtle hover:text-ink'
-              }`}
-            >
-              {tab.label}
-              <span className="ml-[6px] text-[12px] opacity-60">{counts[tab.value]}</span>
-            </button>
-          ))}
-        </div>
       </div>
 
-      {batch && batch !== NO_BATCH && (() => {
-        const count = batches.find(([name]) => name === batch)?.[1] ?? 0;
-        const over = count > MAX_BADGES_PER_BATCH;
-        return (
-          <div className="flex flex-wrap items-center gap-[12px] rounded-[8px] bg-accent-soft px-[12px] py-[8px] text-[14px] leading-[1.5]">
-            <span className="flex-1">
-              Batch <b>{batch}</b>: {count} badge{count === 1 ? '' : 's'}, one per page, sorted by last name.
-              {over && <span className="text-[#b4441f]"> Over the printer’s {MAX_BADGES_PER_BATCH}-badge limit — split it in Airtable.</span>}
-            </span>
-            <button
-              type="button"
-              disabled={!count || over || downloading}
-              onClick={() => void downloadBatch(batch, count)}
-              className={`flex items-center gap-[6px] rounded-[8px] bg-accent px-[12px] py-[6px] text-white hover:bg-[#1f5fe0] disabled:opacity-50 ${focusRing}`}
-            >
-              <DownloadSimple size={16} />
-              {downloading ? 'Rendering…' : `Download ${batch} PDF`}
-            </button>
-          </div>
-        );
-      })()}
+      <div role="tablist" aria-label="Badge status" className="flex gap-[4px]">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            role="tab"
+            aria-selected={status === tab.value}
+            onClick={() => setStatus(tab.value)}
+            className={`rounded-[6px] px-[10px] py-[6px] text-[14px] leading-[20px] ${focusRing} ${
+              status === tab.value ? 'bg-accent-soft text-accent' : 'text-ink-muted hover:bg-overlay-subtle hover:text-ink'
+            }`}
+          >
+            {tab.label}
+            <span className="ml-[6px] text-[12px] opacity-60">{counts[tab.value]}</span>
+          </button>
+        ))}
+      </div>
+
+      {problems.length > 0 && (
+        <div role="status" className="flex items-start gap-[8px] rounded-[8px] bg-[#fbbf24]/15 px-[12px] py-[8px] text-[12px] leading-[1.5]">
+          <Warning size={16} weight="fill" className="mt-[1px] shrink-0 text-[#d97706]" />
+          <p className="min-w-0 [overflow-wrap:anywhere]">
+            {problems.length} registration{problems.length === 1 ? ' can’t get a badge' : 's can’t get badges'}:{' '}
+            {problems.map((r, i) => (
+              <span key={r.recordId}>
+                {i > 0 && ', '}#{r.registrationId ?? r.recordId} ({r.reason})
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
 
       {error && <p className="rounded-[8px] bg-[#fc835e]/15 px-[12px] py-[8px] text-[14px] [overflow-wrap:anywhere] text-[#b4441f]">{error}</p>}
 
@@ -391,12 +447,30 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
           {shown.map((r) => {
             const busy = busyIds.has(r.recordId);
             const chip = STATUS_CHIP[r.status];
+            const isSelected = selected.has(r.recordId);
+            const selectable = selecting && !!r.data;
             return (
               <li key={r.recordId} className="flex flex-col items-center gap-[10px]">
                 {r.data ? (
-                  <div className="shadow-[0_2px_12px_rgba(2,14,30,0.12)] ring-1 ring-ink/5">
+                  <button
+                    type="button"
+                    disabled={!selecting}
+                    onClick={() => toggle(r.recordId)}
+                    aria-pressed={selecting ? isSelected : undefined}
+                    aria-label={selecting ? `Select ${fullName(r)}` : undefined}
+                    className={`relative block rounded-[2px] text-left ring-1 ring-ink/5 shadow-[0_2px_12px_rgba(2,14,30,0.12)] disabled:cursor-default ${
+                      selectable ? `cursor-pointer ${isSelected ? 'ring-[3px] ring-accent' : 'hover:ring-2 hover:ring-accent/50'}` : ''
+                    } ${focusRing}`}
+                  >
                     <BadgeCard data={r.data} />
-                  </div>
+                    {selecting && (
+                      <CheckCircle
+                        size={28}
+                        weight="fill"
+                        className={`absolute top-[8px] left-[8px] ${isSelected ? 'text-accent' : 'text-ink/15'}`}
+                      />
+                    )}
+                  </button>
                 ) : (
                   <div
                     className="flex items-center justify-center bg-overlay-subtle p-[24px] text-center text-[12px] text-ink-muted"
@@ -424,7 +498,7 @@ export function BadgesView({ passcode, onNeedPasscode, notify }: Props) {
                     {chip.label}
                   </span>
                 </div>
-                {r.data && (
+                {r.data && !selecting && (
                   <div className="flex gap-[8px]" style={{ width: PAGE_WIDTH }}>
                     <button
                       type="button"

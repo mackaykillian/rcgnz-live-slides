@@ -158,6 +158,48 @@ export async function handlePreviewBadge(request: Request, env: Env, recordId: s
   }
 }
 
+/** Render rows (valid ones, sorted by last name) as one PDF download. */
+async function sheetResponse(request: Request, env: Env, rows: RegistrationRow[], label: string): Promise<Response> {
+  const valid = rows.filter((r) => r.data).sort(byName);
+  if (!valid.length) return json({ ok: false, error: 'No printable badges selected' }, 404);
+  if (valid.length > MAX_BADGES_PER_BATCH) {
+    return json({ ok: false, error: `${valid.length} badges — the printer takes at most ${MAX_BADGES_PER_BATCH} per PDF.` }, 422);
+  }
+  const pdf = await withBadgeRenderer(env, new URL(request.url).origin, (render) => render.sheet(valid.map((r) => r.data!)));
+  return new Response(pdf, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="RCGNZ-Badges_${filePart(label) || 'Selection'}_${valid.length}.pdf"`,
+      'X-Badge-Count': String(valid.length),
+      'X-Badges-Skipped': String(rows.length - valid.length),
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
+/**
+ * POST /api/admin/badges/pdf `{ recordIds, label }` — the selected badges as one PDF
+ * (a page each, sorted by last name, at most 100). `label` names the file, e.g. "Batch 1".
+ */
+export async function handleSelectionPdf(request: Request, env: Env): Promise<Response> {
+  const denied = checkAdmin(request, env);
+  if (denied) return denied;
+  const body = (await request.json().catch(() => null)) as { recordIds?: unknown; label?: unknown } | null;
+  const recordIds = Array.isArray(body?.recordIds)
+    ? [...new Set(body.recordIds.filter((id): id is string => typeof id === 'string' && /^rec\w+$/.test(id)))]
+    : [];
+  if (!recordIds.length) return json({ ok: false, error: 'Select at least one badge' }, 400);
+  if (recordIds.length > MAX_BADGES_PER_BATCH) {
+    return json({ ok: false, error: `The printer takes at most ${MAX_BADGES_PER_BATCH} badges per PDF` }, 422);
+  }
+  try {
+    const label = typeof body?.label === 'string' ? body.label : 'Selection';
+    return await sheetResponse(request, env, await readRegistrations(env, recordIds), label);
+  } catch (err) {
+    return json({ ok: false, error: (err as Error).message }, 502);
+  }
+}
+
 /**
  * GET /api/admin/badges/batches/:batch — every badge in one Airtable Batch as a
  * single PDF (a page each, sorted by last name) for the printer. Rendered from
@@ -167,23 +209,7 @@ export async function handleBatchPdf(request: Request, env: Env, batch: string):
   const denied = checkAdmin(request, env);
   if (denied) return denied;
   try {
-    const rows = await readRegistrations(env, { batch });
-    const valid = rows.filter((r) => r.data).sort(byName);
-    if (!valid.length) return json({ ok: false, error: `Batch ${batch} has no printable badges` }, 404);
-    if (valid.length > MAX_BADGES_PER_BATCH) {
-      return json({ ok: false, error: `Batch ${batch} has ${valid.length} badges — the printer takes at most ${MAX_BADGES_PER_BATCH}. Split it in Airtable.` }, 422);
-    }
-    const pdf = await withBadgeRenderer(env, new URL(request.url).origin, (render) => render.sheet(valid.map((r) => r.data!)));
-    const name = `RCGNZ-Badges_${filePart(batch) || 'Batch'}_${valid.length}.pdf`;
-    return new Response(pdf, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${name}"`,
-        'X-Badge-Count': String(valid.length),
-        'X-Badges-Skipped': String(rows.length - valid.length),
-        'Cache-Control': 'no-store',
-      },
-    });
+    return await sheetResponse(request, env, await readRegistrations(env, { batch }), batch);
   } catch (err) {
     return json({ ok: false, error: (err as Error).message }, 502);
   }
