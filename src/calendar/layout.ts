@@ -33,7 +33,10 @@ export const MAINSTAGE_ROOM = 'Grand Ballroom';
 export const NO_ROOM = 'No room';
 
 /** Rooms not shown on the timeline. Their sessions keep their room in the data; they just aren't displayed. */
-export const HIDDEN_CALENDAR_ROOMS = ['Awardco HQ', 'Montage Entrance', NO_ROOM];
+export const HIDDEN_CALENDAR_ROOMS = ['Montage Entrance', NO_ROOM];
+
+/** Rooms shown as the last columns, and only on days they have sessions (e.g. the Awardco HQ tour day). */
+export const TRAILING_ROOMS = ['Awardco HQ'];
 
 /** Sessions with no location in Airtable, in start order — flagged above the timeline. */
 export function sessionsWithoutLocation(sessions: Session[]): Session[] {
@@ -165,8 +168,11 @@ export function buildCalendarDay(sessions: Session[], day: string): CalendarDay 
     last = Math.max(last, endMin);
   }
 
-  const extras = [...byRoom.keys()].filter((r) => !CALENDAR_ROOMS.includes(r) && r !== NO_ROOM).sort();
-  const order = [...CALENDAR_ROOMS, ...extras, ...(byRoom.has(NO_ROOM) ? [NO_ROOM] : [])];
+  const extras = [...byRoom.keys()]
+    .filter((r) => !CALENDAR_ROOMS.includes(r) && !TRAILING_ROOMS.includes(r) && r !== NO_ROOM)
+    .sort();
+  const trailing = TRAILING_ROOMS.filter((r) => byRoom.has(r));
+  const order = [...CALENDAR_ROOMS, ...extras, ...trailing, ...(byRoom.has(NO_ROOM) ? [NO_ROOM] : [])];
 
   return {
     startMin: Number.isFinite(first) ? Math.floor(first / 60) * 60 : 8 * 60,

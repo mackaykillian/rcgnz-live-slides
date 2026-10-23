@@ -95,7 +95,9 @@ Browser ◀── /api/images/:id ◀── KV cache ◀── Airtable attachme
   - Column order, room label colors (`ROOM_LABEL_COLORS`), the double-width
     mainstage (`MAINSTAGE_ROOM`, Grand Ballroom) and the
     scale are set in `src/calendar/layout.ts`.
-  - Awardco HQ, Montage Entrance and sessions without a location are hidden
+  - Awardco HQ is the last column, and only appears on days it has sessions
+    (`TRAILING_ROOMS`).
+  - Montage Entrance and sessions without a location are hidden
     (`HIDDEN_CALENDAR_ROOMS`). A warning above the timeline lists any sessions
     missing a location.
   - **Registration tag** (bottom-right of a session) shows registered/capacity

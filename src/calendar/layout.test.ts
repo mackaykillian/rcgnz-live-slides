@@ -66,21 +66,29 @@ describe('buildCalendarDay', () => {
     session('keynote', 'Grand Ballroom', '8:30', '8:45'),
     session('breakout', 'Gallery I', '13:00', '13:45'),
     session('lunch', null, '12:00', '13:00'),
-    session('tour', 'Awardco HQ', '9:00', '10:00'),
+    session('tour', 'Awardco HQ', '9:00', '10:00', '2026-11-09'),
     session('otherDay', 'Gallery I', '9:00', '10:00', '2026-11-11'),
   ];
   const day = buildCalendarDay(sessions, '2026-11-10');
 
   it('spans whole hours around the day’s sessions', () => {
-    expect([day.startMin, day.endMin]).toEqual([8 * 60, 14 * 60]); // hidden-room sessions don't stretch the range
+    expect([day.startMin, day.endMin]).toEqual([8 * 60, 14 * 60]); // "No room" sessions don't stretch the range
   });
 
-  it('keeps the configured room order and hides "Awardco HQ" and "No room"', () => {
+  it('keeps the configured room order and hides "No room"', () => {
     const rooms = day.columns.map((c) => c.room);
     expect(rooms.slice(0, 4)).toEqual(['Empire West', 'Empire East', 'Empire Lounge', 'Grand Ballroom']);
-    expect(rooms).not.toContain('Awardco HQ');
     expect(rooms).not.toContain(NO_ROOM);
     expect(day.columns.find((c) => c.room === 'Grand Ballroom')!.wide).toBe(true);
+  });
+
+  it('shows Awardco HQ as the last column, only on days it has sessions', () => {
+    const withTour = buildCalendarDay(
+      [session('tour', 'Awardco HQ', '9:00', '10:00'), session('pop-up', 'Rooftop', '9:00', '10:00')],
+      '2026-11-10',
+    );
+    expect(withTour.columns.map((c) => c.room).slice(-2)).toEqual(['Rooftop', 'Awardco HQ']);
+    expect(day.columns.map((c) => c.room)).not.toContain('Awardco HQ'); // 'tour' is on another day here
   });
 
   it('lists other unlisted rooms after the configured ones', () => {
